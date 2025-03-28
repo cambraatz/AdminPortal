@@ -1,0 +1,8 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:5173",
+"LaunchCommand": "npm run dev",
+"WorkingDirectory": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\..\\adminportal.client",
+"MaxTimeoutInSeconds": "120"
+}
+}

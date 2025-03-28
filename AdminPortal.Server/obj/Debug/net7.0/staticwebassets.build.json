@@ -1,0 +1,23 @@
+{
+  "Version": 1,
+  "Hash": "AOygxgAiJuxIe2y973+T85JshTLuR//IvJ7ILjCk/Lg=",
+  "Source": "AdminPortal.Server",
+  "BasePath": "_content/AdminPortal.Server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\adminportal.client\\adminportal.client.esproj",
+      "Version": 2,
+      "Source": "adminportal.client",
+      "GetPublishAssetsTargets": "GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
