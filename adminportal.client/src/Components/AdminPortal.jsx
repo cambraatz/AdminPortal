@@ -7,22 +7,13 @@ Update Date: 1/8/2025
 *//////////////////////////////////////////////////////////////////////
 
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Header from './Header';
 import Popup from './Popup';
 import Footer from './Footer';
-import { API_URL, 
-    isCompanyValid, 
-    getToken,  
-    logout, 
-    isTokenValid,
-    requestAccess,
+import { API_URL,
     showFailFlag,
-    scrapeURL,
-    cacheToken,
-    COMPANIES,
-    MODULES,
-    clearMemory } from '../Scripts/helperFunctions';
+    FAIL_WAIT, SUCCESS_WAIT } from '../Scripts/helperFunctions';
 import { Logout } from '../Scripts/Logout';
 
 /*/////////////////////////////////////////////////////////////////////
@@ -97,9 +88,8 @@ const AdminPortal = () => {
 
     // location state and navigation calls...
     const location = useLocation();
-    const navigate = useNavigate();
 
-    const [isLoading,setIsLoading] = useState(true);
+    const [loading,setLoading] = useState(true);
 
     // header toggle state...
     const [header,setHeader] = useState(location.state ? location.state.header : "open");
@@ -116,48 +106,21 @@ const AdminPortal = () => {
     // "Edit User", "Find User", "Change Company"...
     const [popup, setPopup] = useState("Edit User");
 
-    //const [company, setCompany] = useState(location.state ? location.state.company : "contact system admin");
-    const name = isCompanyValid();
-    const [company, setCompany] = useState(name ? name : "No Company Set");
-    const [activeCompany, setActiveCompany] = useState(company);
-
-    // flag invalid navigation with null location.state...
-    const VALID = location.state ? location.state.valid : false;
+    const [company, setCompany] = useState();
+    const [activeCompany, setActiveCompany] = useState();
 
     // ensure company, token and navigation validity onLoad...
-    /*useEffect(() => {
-        // fetch company name...
-        //const company = isCompanyValid();
-        setCompany(isCompanyValid());
-        if (!company) {
-            renderCompany();
-        } else {
-            setCompany(company);
-        }
-        // validate token...
-        const token = getToken();
-        if(!isTokenValid(token)){
-            logout();
-            navigate('/');
-            return;
-        }
-        // validate proper navigation...
-        if(!VALID) {
-            logout();
-            navigate('/');
-            return;
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeCompany])*/
-
-    useEffect(() => {
-        validateUser();
+    useEffect(() => {  
+        //console.log("useEffect, waiting for cookies to set...") 
+        //setTimeout(() => {
+            validateUser();
+        //}, 7500);
     }, []);
 
     /* Page rendering helper functions... */
 
     async function validateUser(){
-        setIsLoading(true);
+        setLoading(true);
 
         // direct bypass to powerunit validation...
         const response = await fetch(API_URL + "api/Admin/ValidateUser", {
@@ -167,58 +130,68 @@ const AdminPortal = () => {
                 'Content-Type': 'application/json; charset=UTF-8'
             },
             credentials: 'include'
-        })
-        
-        // IS THIS NECESSARY????????
-        if (!response.ok) { 
-            console.error("ERROR: User validation failed.");
-            console.error("ERROR: Falling back to hardcoded credentials.\nInject Logout() protocol here in production.");
-            setCompany("Rou's Empire");
-            setActiveCompany("Rou's Empire");
-            setCurrUser("Moon");
-        };
+        });
 
         const data = await response.json();
         console.log(data);
 
         if (data.success) {
             // stash tokens in storage...
-            cacheToken(data.accessToken,data.refreshToken)
+            //cacheToken(data.accessToken,data.refreshToken)
 
-            // update state variables with latest powerunit...
-            /*setCredentials({
-                ...credentials,
-                USERNAME: data.user.Username,
-                POWERUNIT: data.user.Powerunit
+            let mappings = {};
+            const mapping_response = await fetch(`${API_URL}api/Admin/FetchMappings`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8'
+                },
+                credentials: 'include'
             });
-            setUpdateData({
-                ...updateData,
-                USERNAME: data.user.Username,
-                POWERUNIT: data.user.Powerunit
-            });
-            setFormData({
-                ...formData,
-                powerUnit: data.user.Powerunit
-            });*/
 
-            //console.log(`activeCompany: ${data.user.ActiveCompany}`)
+            if(mapping_response.ok) {
+                mappings = await mapping_response.json();
+                sessionStorage.setItem("companies_map", mappings.companies);
+                console.log("companies_map: ", mappings.companies);
+                
+                sessionStorage.setItem("modules_map", mappings.modules);
+                console.log("modules_map: ", mappings.modules);              
+            } else {
+                console.error("Error setting mapping cookies.")
+            }
+
+            const COMPANIES = JSON.parse(mappings.companies);
+            setCompanies(COMPANIES);
+            //console.log(COMPANIES);
+
+            const MODULES = JSON.parse(mappings.modules);
+            setModules(MODULES);
+            //console.log(MODULES);
+            
             setCompany(COMPANIES[data.user.ActiveCompany]);
             setActiveCompany(COMPANIES[data.user.ActiveCompany]);
+    
             setCurrUser(data.user.Username);
-            //console.log(`currCompany: ${currCompany}`);
             //console.log(`data.user.Username: ${data.user.Username}`);
-            //console.log(`credentials.USERNAME: ${credentials.USERNAME}`);
-
-            // reset popup window and open...
-            //setPopup(null);
-            //openPopup();
-        }
-        else {
+        } else {
             console.error("ERROR: Validation error, logging out.");
-            //Logout();
-        }
+            // Create the button element
+            const logoutButton = document.createElement('button');
+            logoutButton.innerText = 'Logout';
+            logoutButton.style.cssText = 'background-color: red; color: white; padding: 10px; margin-top: 10px;';
 
-        setIsLoading(false);
+            // Attach a click event to trigger Logout function
+            logoutButton.onclick = function() {
+                Logout();
+            };
+
+            // Append the button to the body or a specific container
+            document.body.appendChild(logoutButton);
+
+            //setTimeout(() => {
+            //    Logout();
+            //},15000);
+        }
+        setLoading(false);
     }
 
     /*/////////////////////////////////////////////////////////////////
@@ -346,76 +319,6 @@ const AdminPortal = () => {
     /* API Calls and Functionality... */
 
     /*/////////////////////////////////////////////////////////////////
-    // handle unique behavior of collection of admin buttons...
-    [void] : getCompany() {
-        verify valid token credentials
-        fetch company name on file
-        if (success):
-            setCompany to name on file
-        else:
-            setCompany to placeholder
-    }
-
-    NOTE: helper `getCompany_DB` does nearly the same, replace this?
-
-    *//////////////////////////////////////////////////////////////////
-
-    async function validateToken(username) {
-        // request token from memory, refresh as needed...
-        const token = await requestAccess(username);
-        
-        // handle invalid token on login...
-        if (!token) {
-            //navigate('/');
-            setPopup("Token Fail");
-            setTimeout(() => {
-                closePopup();
-            },1000)
-
-            Logout();
-            return;
-        }
-
-        return token;
-    }
-
-    async function getCompany() {
-        /*// request token from memory, refresh as needed...
-        const token = await requestAccess(credentials.USERNAME);
-        
-        // handle invalid token on login...
-        if (!token) {
-            //navigate('/');
-            setPopup("Token Fail");
-            setTimeout(() => {
-                closePopup();
-            },1000)
-
-            Logout();
-            return;
-        }*/
-        const token = validateToken(credentials.USERNAME);
-
-        const response = await fetch(API_URL + "api/Admin/GetCompany?COMPANYKEY=c01", {
-            method: "GET",
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json; charset=UTF-8'
-            }
-        })
-
-        const data = await response.json();
-        //console.log(data);
-
-        if (data.success) {
-            setCompany(data["COMPANYNAME"]);
-        }
-        else {
-            setCompany("Your Company Here");
-        }
-    }
-
-    /*/////////////////////////////////////////////////////////////////
     // update active company name with provided user input...
     [void] : updateCompany() {
         trigger input error styling when invalid + render flag
@@ -438,44 +341,34 @@ const AdminPortal = () => {
             return;
         }
 
-        // request token from memory, refresh as needed...
-        const token = await requestAccess(credentials.USERNAME);
-        
-        // handle invalid token on login...
-        if (!token) {
-            //navigate('/');
-            Logout();
-            return;
-        }
-
         const response = await fetch(API_URL + "api/Admin/SetCompany", {
             body: JSON.stringify(company),
             method: "PUT",
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
-            }
+            },
+            credentials: 'include'
         })
 
         const data = await response.json();
         //console.log("data: ",data);
 
         if (!data.success) {
-            console.trace("company name value mismatch");
+            console.error("company name value mismatch");
             setPopup("Fail");
 
             setTimeout(() => {
                 setPopup("Change Company");
-            },2000)
+            },FAIL_WAIT);
         }
         else {
             // set active, company is updated dynamically...
-            setActiveCompany(data.COMPANYNAME);
+            setActiveCompany(data.company);
             setPopup("Company Success");
             
             setTimeout(() => {
                 closePopup();
-            },1000)
+            },SUCCESS_WAIT);
         }
     }
 
@@ -529,14 +422,7 @@ const AdminPortal = () => {
             return;
         }
 
-        //console.log(`replace with ${credentials}`);
-        //let formData = new FormData()
-        //formData.append("USERNAME", credentials.USERNAME);
-        //formData.append("PASSWORD", null);
-        //formData.append("POWERUNIT", credentials.POWERUNIT);
-
-        //const form = ["USERNAME","PASSWORD","POWERUNIT","PREVUSER"];
-        //form.forEach(key => console.log(`${key}: ${formData.get(key)}`));
+        let COMPANIES = JSON.parse(sessionStorage.getItem("companies_mapping") || "{}");
 
         const formData = {
             Username: credentials.USERNAME,
@@ -547,30 +433,27 @@ const AdminPortal = () => {
             Modules: Object.keys(checkedModules).filter(key => checkedModules[key])
         };
 
-        //console.log(formData);
-        console.log("checkedCompanies: ", checkedCompanies);
-        console.log("checkedModules: ", checkedModules);
-
-        console.log("formData: ", formData);
+        //console.log("checkedCompanies: ", checkedCompanies);
+        //console.log("checkedModules: ", checkedModules);
+        //console.log("formData: ", formData);
 
         const response = await fetch(API_URL + "api/Admin/AddDriver", {
             body: JSON.stringify(formData),
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
-            }
+            },
+            credentials: 'include'
         })
 
         const data = await response.json();
         //console.log(data);
-
         if (data.success) {
             setPopup("Add Success");
             setTimeout(() => {
                 closePopup();
-            },1000)
-        }
-        else {
+            },SUCCESS_WAIT);
+        } else {
             if (data.error.includes("Violation of PRIMARY KEY")) {
                 setPopup("Admin_Add Fail");
             } else {
@@ -578,8 +461,9 @@ const AdminPortal = () => {
             }
             setTimeout(() => {
                 closePopup();
-            },1500)
+            },FAIL_WAIT);
         }
+        
     }
 
     /*/////////////////////////////////////////////////////////////////
@@ -639,39 +523,23 @@ const AdminPortal = () => {
                 POWERUNIT: user.POWERUNIT
             });
 
-            const check_mods = {};
-            modules.forEach((mod) => {
-                check_mods[mod.MODULEURL] = user.MODULES.includes(mod.MODULEURL);
+            console.log(`modules: ${modules}`);
+            console.log(`companies: ${companies}`);
+            console.log(`user.MODULES: ${user.MODULES}`);
 
-                if (mod.MODULEURL === "deliverymanager" && user.MODULES.includes("DLVYCHKOFF")) {
-                    check_mods[mod.MODULEURL] = true;
-                }
-                if (mod.MODULEURL === "warehouse" && user.MODULES.includes("WAREHOUSE")) {
-                    check_mods[mod.MODULEURL] = true;
-                }
-                if (mod.MODULEURL === "admin" && user.MODULES.includes("ADMIN")) {
-                    check_mods[mod.MODULEURL] = true;
-                }
+            const check_mods = {};
+            Object.entries(modules).forEach(([url,name]) => {
+                console.log(`check_mods, url: ${url}, name: ${name}`);
+                check_mods[url] = user.MODULES.includes(url);
             });
             setCheckedModules(check_mods);
             console.log("check_mods: ", check_mods);
 
-            /*const transformed_mods = Object.fromEntries(
-                Object.entries(check_mods).map(([key,value]) => {
-                    console.log(`key: ${key}, value: ${value}`);
-                    if (key === "DLVYCHKOFF") return ["deliverymanager",true];
-                    if (key === "ADMIN") return ["admin",true];
-                    if (key === "WAREHOUSE") return ["warehouse",true];
-                    return [key,value];
-                })
-            );
-            console.log("transformed_mods: ", transformed_mods);
-            setCheckedModules(transformed_mods);*/
-
             const check_comps = {};
-            companies.forEach((comp) => {
-                check_comps[comp.COMPANYKEY] = user.COMPANIES.includes(comp.COMPANYKEY);
-            })
+            Object.entries(companies).forEach(([key,name]) => {
+                console.log(`check_mods, key: ${key}, name: ${name}`);
+                check_comps[key] = user.COMPANIES.includes(key);
+            });
             setCheckedCompanies(check_comps);
             console.log("check_comps: ", check_comps);
 
@@ -737,14 +605,14 @@ const AdminPortal = () => {
         }
 
         // request token from memory, refresh as needed...
-        const token = await requestAccess(credentials.USERNAME);
+        /*const token = await requestAccess(credentials.USERNAME);
         
         // handle invalid token on login...
         if (!token) {
             //navigate('/');
             Logout();
             return;
-        }
+        }*/
 
         // package driver credentials and attempt to replace...
         const body_data = {
@@ -757,7 +625,7 @@ const AdminPortal = () => {
             body: JSON.stringify(body_data),
             method: "PUT",
             headers: {
-                "Authorization": `Bearer ${token}`,
+                //"Authorization": `Bearer ${token}`,
                 'Content-Type': 'application/json; charset=UTF-8'
             },
             credentials: 'include'
@@ -794,22 +662,9 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     async function removeDriver() {
-        // request token from memory, refresh as needed...
-        const token = await requestAccess(credentials.USERNAME);
-        
-        // handle invalid token on login...
-        if (!token) {
-            //navigate('/');
-            Logout();
-            return;
-        }
-
-        // eslint-disable-next-line no-unused-vars
         const response = await fetch(API_URL + "api/Admin/DeleteDriver?USERNAME=" + credentials.USERNAME, {
             method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            }
+            credentials: 'include'
         })
 
         const data = await response.json();
@@ -822,7 +677,7 @@ const AdminPortal = () => {
             },1000)
         }
         else {
-            console.trace("delete driver failed");
+            console.error("delete driver failed");
             setPopup("Fail");
             setTimeout(() => {
                 closePopup();
@@ -864,7 +719,7 @@ const AdminPortal = () => {
         })
 
         if (companies.length === 0 || modules.length === 0) {
-            collectOptions();
+            //collectOptions();
         }
 
         // handle main admin button popup generation
@@ -878,30 +733,11 @@ const AdminPortal = () => {
                 break;
             case "Edit Company Name":
                 setPopup("Change Company");
-                getCompany();
                 break;
             default:
                 break;
         }
         openPopup();
-    }
-
-    /*/////////////////////////////////////////////////////////////////
-    // debug function to dump all active users to console.log()...
-    [void] : dumpUsers() {
-        fetch all drivers
-        print to console.log()
-    }
-    *//////////////////////////////////////////////////////////////////
-
-    // eslint-disable-next-line no-unused-vars
-    async function dumpUsers() {
-        const response = await fetch(API_URL + "api/Admin/GetAllDrivers", {
-            method: "GET",
-        })
-
-        const data = await response.json();
-        console.log("data: ",data);
     }
 
     const [companies,setCompanies] = useState([]);
@@ -924,60 +760,6 @@ const AdminPortal = () => {
         }
     }
 
-    async function collectOptions() {
-        // request token from memory, refresh as needed...
-        const token = await requestAccess(credentials.USERNAME);
-        
-        // handle invalid token on login...
-        if (!token) {
-            //navigate('/');
-            Logout();
-            return;
-        }
-
-        const module_response = await fetch(API_URL + "api/Admin/CollectModules", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            }
-        })
-
-        const company_response = await fetch(API_URL + "api/Admin/CollectCompanies", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            }
-        })
-
-        const module_data = await module_response.json();
-        console.log(module_data);
-        if (module_data.success) {
-            console.log("modules: ", module_data.modules);
-            setModules(module_data.modules);
-        } else {
-            console.trace("modules dump failed");
-        }
-
-        const company_data = await company_response.json();
-        console.log(company_data);
-        if (company_data.success) {
-            console.log("companies: ", company_data.companies);
-            setCompanies(company_data.companies);
-        } else {
-            console.trace("companies dump failed");
-        }
-
-        /*setTimeout(() => {
-            console.log("checkedModules: ", checkedModules);
-            console.log("checkedCompanies: ", checkedCompanies);
-        },2000)*/
-
-        if (!company_data.success || !module_data.success) {
-            Logout();
-            return;
-        }
-    }
-
     // package helper functions to organize popup functions...
     const functions = {
         "addDriver": addDriver,
@@ -992,7 +774,7 @@ const AdminPortal = () => {
     // render template...
     return(
         <div id="webpage">
-            {isLoading ? (
+            {loading ? (
                 <div className="loading-container">
                     <p>Loading...</p>
                 </div>

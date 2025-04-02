@@ -266,6 +266,9 @@ export const MODULES = {
     WAREHOUSE: "temp"
 }
 
+export const FAIL_WAIT = 1000;
+export const SUCCESS_WAIT = 1500;
+
 //export const API_URL = "http://www.tcsservices.com:40730/"
 //export const API_URL = "http://www.admin.tcsservices.com:40730/"
 export const API_URL = "https://admin.tcsservices.com/";

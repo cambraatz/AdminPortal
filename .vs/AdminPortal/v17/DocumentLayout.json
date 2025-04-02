@@ -7,12 +7,12 @@
       "RelativeMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|solutionrelative:adminportal.server\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|c:\\users\\camer\\desktop\\apps\\adminportal\\adminportal.server\\services\\cookieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|solutionrelative:adminportal.server\\services\\cookieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|c:\\users\\camer\\desktop\\apps\\adminportal\\adminportal.server\\services\\tokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|solutionrelative:adminportal.server\\services\\tokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|c:\\users\\camer\\desktop\\apps\\adminportal\\adminportal.server\\services\\cookieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|solutionrelative:adminportal.server\\services\\cookieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7C30C662-C226-4328-859C-AD09B2428EE4}|AdminPortal.Server\\AdminPortal.Server.csproj|c:\\users\\camer\\desktop\\apps\\adminportal\\adminportal.server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -46,8 +46,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 181,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CookieService.cs",
+              "DocumentMoniker": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Services\\CookieService.cs",
+              "RelativeDocumentMoniker": "AdminPortal.Server\\Services\\CookieService.cs",
+              "ToolTip": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Services\\CookieService.cs",
+              "RelativeToolTip": "AdminPortal.Server\\Services\\CookieService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACcAAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-25T18:09:30.06Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -56,7 +69,7 @@
               "RelativeDocumentMoniker": "AdminPortal.Server\\Controllers\\AdminController.cs",
               "ToolTip": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Controllers\\AdminController.cs",
               "RelativeToolTip": "AdminPortal.Server\\Controllers\\AdminController.cs",
-              "ViewState": "AQIAAFUCAAAAAAAAAAAuwNMAAAAMAAAA",
+              "ViewState": "AQIAAF0AAAAAAAAAAAAAAPUCAAARAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-20T23:53:16.096Z",
               "EditorCaption": ""
@@ -64,24 +77,12 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "CookieService.cs",
-              "DocumentMoniker": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Services\\CookieService.cs",
-              "RelativeDocumentMoniker": "AdminPortal.Server\\Services\\CookieService.cs",
-              "ToolTip": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Services\\CookieService.cs",
-              "RelativeToolTip": "AdminPortal.Server\\Services\\CookieService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-25T18:09:30.06Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
               "Title": "TokenService.cs",
               "DocumentMoniker": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Services\\TokenService.cs",
               "RelativeDocumentMoniker": "AdminPortal.Server\\Services\\TokenService.cs",
               "ToolTip": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Services\\TokenService.cs",
               "RelativeToolTip": "AdminPortal.Server\\Services\\TokenService.cs",
-              "ViewState": "AQIAACIAAAAAAAAAAADwv2UAAAAJAAAA",
+              "ViewState": "AQIAAGMAAAAAAAAAAAAIwIUAAAA6AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-25T18:12:25.309Z",
               "EditorCaption": ""
@@ -118,7 +119,7 @@
               "RelativeDocumentMoniker": "AdminPortal.Server\\Program.cs",
               "ToolTip": "C:\\Users\\camer\\Desktop\\Apps\\AdminPortal\\AdminPortal.Server\\Program.cs",
               "RelativeToolTip": "AdminPortal.Server\\Program.cs",
-              "ViewState": "AQIAACQAAAAAAAAAAAAAAG0AAAArAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAEEAAAApAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-12T20:02:29.809Z",
               "EditorCaption": ""

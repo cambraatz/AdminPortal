@@ -12,6 +12,8 @@ const Popup = (props) => {
     // ACTIVE
     //
     else if(props.message === "Edit User"){
+        const companies = JSON.parse(sessionStorage.getItem("companies_map") || "{}");
+        const modules = JSON.parse(sessionStorage.getItem("modules_map") || "{}");
         return(
             <>
                 <div className="popupLoginContent">
@@ -41,14 +43,14 @@ const Popup = (props) => {
                         <div className="checkbox-header">
                             <h5 className="checkbox-header-text">Companies</h5>
                         </div>
-                        {props.companies.length > 0 && (
-                            props.companies.map((company) => (
-                                <label key={company.COMPANYKEY} className="check-container">
-                                    {company.COMPANYNAME}
+                        {companies && (
+                            Object.entries(companies).map(([key,company]) => (
+                                <label key={key} className="check-container">
+                                    {company}
                                     <input 
                                         type="checkbox" 
-                                        checked={!!props.checkedCompanies?.[company.COMPANYKEY]}
-                                        onChange={() => props.functions.checkboxChange("company",company.COMPANYKEY)}
+                                        checked={!!props.checkedCompanies?.[key]}
+                                        onChange={() => props.functions.checkboxChange("company",key)}
                                     />
                                     <span className="checkmark"></span>
                                 </label>
@@ -59,14 +61,14 @@ const Popup = (props) => {
                         <div className="checkbox-header">
                             <h5 className="checkbox-header-text">Services</h5>
                         </div>
-                        {props.modules.length > 0 && (
-                            props.modules.map((module) => (
-                                <label key={module.MODULEURL} className="check-container">
-                                    {module.MODULENAME}
+                        {modules && (
+                            Object.entries(modules).map(([url,name]) => (
+                                <label key={url} className="check-container">
+                                    {name}
                                     <input 
                                         type="checkbox" 
-                                        checked={!!props.checkedModules?.[module.MODULEURL]}
-                                        onChange={() => props.functions.checkboxChange("module",module.MODULEURL)}
+                                        checked={!!props.checkedModules?.[url]}
+                                        onChange={() => props.functions.checkboxChange("module",url)}
                                     />
                                     <span className="checkmark"></span>
                                 </label>
@@ -92,6 +94,8 @@ const Popup = (props) => {
     // ACTIVE
     //
     else if(props.message === "Add User"){
+        const companies = JSON.parse(sessionStorage.getItem("companies_map") || "{}");
+        const modules = JSON.parse(sessionStorage.getItem("modules_map") || "{}");
         return(
             <div className="popupLoginContent">
                 <div className="input_wrapper">
@@ -115,14 +119,14 @@ const Popup = (props) => {
                     <div className="checkbox-header">
                         <h5 className="checkbox-header-text">Companies</h5>
                     </div>
-                    {props.companies.length > 0 && (
-                        props.companies.map((company) => (
-                            <label key={company.COMPANYKEY} className="check-container">
-                                {company.COMPANYNAME}
+                    {companies && (
+                        Object.entries(companies).map(([key,company]) => (
+                            <label key={key} className="check-container">
+                                {company}
                                 <input 
                                     type="checkbox" 
-                                    checked={!!props.checkedCompanies?.[company.COMPANYKEY]}
-                                    onChange={() => props.functions.checkboxChange("company",company.COMPANYKEY)}
+                                    checked={!!props.checkedCompanies?.[key]}
+                                    onChange={() => props.functions.checkboxChange("company",key)}
                                 />
                                 <span className="checkmark"></span>
                             </label>
@@ -133,14 +137,14 @@ const Popup = (props) => {
                     <div className="checkbox-header">
                         <h5 className="checkbox-header-text">Services</h5>
                     </div>
-                    {props.modules.length > 0 && (
-                        props.modules.map((module) => (
-                            <label key={module.MODULEURL} className="check-container">
-                                {module.MODULENAME}
+                    {modules && (
+                        Object.entries(modules).map(([url,module]) => (
+                            <label key={url} className="check-container">
+                                {module}
                                 <input 
                                     type="checkbox" 
-                                    checked={!!props.checkedModules?.[module.MODULEURL]}
-                                    onChange={() => props.functions.checkboxChange("module",module.MODULEURL)}
+                                    checked={!!props.checkedModules?.[url]}
+                                    onChange={() => props.functions.checkboxChange("module",url)}
                                 />
                                 <span className="checkmark"></span>
                             </label>
@@ -198,10 +202,10 @@ const Popup = (props) => {
                         </div>
                     </div>
                     <div id="submit_company">
-                        <button className="popup_button" onClick={props.onPressFunc.updateCompany}>Update Company</button>
+                        <button className="popup_button" onClick={props.functions.updateCompany}>Update Company</button>
                     </div>
                     <div id="cancel_user">
-                        <button className="popup_button" onClick={props.onPressFunc.cancelDriver}>Cancel</button>
+                        <button className="popup_button" onClick={props.functions.cancelDriver}>Cancel</button>
                     </div>
                 </div>
             </>

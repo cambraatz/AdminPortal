@@ -15,10 +15,10 @@ namespace AdminPortal.Server.Services
         public (string AccessToken, string RefreshToken) GenerateToken(string username, string company = null)
         {
             var accessClaims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+            {
+                new Claim(ClaimTypes.Name, username),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
             // add company if present...
             if (!string.IsNullOrEmpty(company))
@@ -62,35 +62,53 @@ namespace AdminPortal.Server.Services
             public string? refreshToken { get; set; }
         }
 
-        public TokenValidation ValidateAccessToken(string accessToken, string username)
+        public TokenValidation ValidateTokens(string accessToken, string refreshToken, string username)
         {
+            TokenValidationParameters tokenParams = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _configuration["Jwt:Audience"],
+                ValidateLifetime = true,  // ensure token is not expired
+                ClockSkew = TimeSpan.Zero
+            };
+
             var tokenHandler = new JwtSecurityTokenHandler();
             try
             {
-                var principal = tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
-                    ValidateIssuer = true,
-                    ValidIssuer = _configuration["Jwt:Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = _configuration["Jwt:Audience"],
-                    ValidateLifetime = true,  // ensure token is not expired
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
-
+                var principal = tokenHandler.ValidateToken(accessToken, tokenParams, out SecurityToken validatedToken);
                 var jwtToken = validatedToken as JwtSecurityToken;
                 var exp = jwtToken?.Payload.Exp ?? 0;
                 var expirationTime = DateTimeOffset.FromUnixTimeSeconds(exp);
                 var currentTime = DateTimeOffset.UtcNow;
 
-
-
                 // check if token is close to expiring
                 if (expirationTime - currentTime < TimeSpan.FromMinutes(5))
                 {
-                    var newTokens = GenerateToken(username);
-                    return new TokenValidation { IsValid = true, Principal = principal, accessToken = newTokens.AccessToken, refreshToken = newTokens.RefreshToken };
+                    try
+                    {
+                        var refreshPrincipal = tokenHandler.ValidateToken(refreshToken, tokenParams, out SecurityToken validatedRefresh);
+                        var refreshJwtToken = validatedRefresh as JwtSecurityToken;
+                        var refreshExp = refreshJwtToken?.Payload.Exp ?? 0;
+                        var refreshExpTime = DateTimeOffset.FromUnixTimeSeconds(exp);
+
+                        if (refreshExpTime > currentTime)
+                        {
+                            var newTokens = GenerateToken(username);
+                            return new TokenValidation { IsValid = true, Principal = principal, accessToken = newTokens.AccessToken, refreshToken = newTokens.RefreshToken };
+                        }
+                        else
+                        {
+                            return new TokenValidation { IsValid = false, Message = "Refresh token has expired." };
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return new TokenValidation { IsValid = false, Message = $"Refresh token validation failed: {ex.Message}" };
+                    }
                 }
 
                 return new TokenValidation { IsValid = true, Principal = principal };
@@ -99,6 +117,43 @@ namespace AdminPortal.Server.Services
             {
                 return new TokenValidation { IsValid = false, Message = ex.Message };
             }
+        }
+
+        public (bool success, string message) AuthorizeRequest(HttpContext context)
+        {
+            var request = context.Request;
+            var response = context.Response;
+
+            var accessToken = request.Cookies["access_token"];
+            var refreshToken = request.Cookies["refresh_token"];
+            var username = request.Cookies["username"];
+            //var company = Request.Cookies["company"];
+
+            if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
+            {
+                return (false, "Access token is missing");
+            }
+            if (string.IsNullOrEmpty(username))
+            {
+                return (false, "Username is missing");
+            }
+
+            var tokenService = new TokenService(_configuration);
+            var result = tokenService.ValidateTokens(accessToken, refreshToken, username);
+            if (!result.IsValid)
+            {
+                return (false, "Invalid access token, authorization failed.");
+            }
+
+            accessToken = result.accessToken;
+            refreshToken = result.refreshToken;
+
+            if (accessToken != null && refreshToken != null)
+            {
+                response.Cookies.Append("access_token", accessToken, CookieService.AccessOptions());
+                response.Cookies.Append("refresh_token", refreshToken, CookieService.RefreshOptions());
+            }
+            return (true, "Token has been validated, authorization granted.");
         }
     }
 }
