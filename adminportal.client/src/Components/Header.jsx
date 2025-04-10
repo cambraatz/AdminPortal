@@ -11,7 +11,7 @@ const Header = (props) => {
     const [user, setUser] = useState(props.currUser);
 
     useEffect(() => {
-        if (props.company && props.company != "") {
+        if (props.company && (props.company != "" || props.company != null)) {
             setCompany(props.company.split(' '));
         }
         setUser(props.currUser);

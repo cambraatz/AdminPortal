@@ -86,9 +86,10 @@ BASIC STRUCTURE:
 const AdminPortal = () => {
     /* Page rendering, navigation and state initialization... */
 
-    // location state and navigation calls...
+    // location state...
     const location = useLocation();
 
+    // loading state to prevent early renders...
     const [loading,setLoading] = useState(true);
 
     // header toggle state...
@@ -100,12 +101,15 @@ const AdminPortal = () => {
         PASSWORD: "",
         POWERUNIT: ""
     });
+
+    // current/past user credentials...
     const [currUser, setCurrUser] = useState("admin");
     const [previousUser, setPreviousUser] = useState("");
 
     // "Edit User", "Find User", "Change Company"...
     const [popup, setPopup] = useState("Edit User");
 
+    // company (forms) and activeCompany (rendered)...
     const [company, setCompany] = useState();
     const [activeCompany, setActiveCompany] = useState();
 
@@ -136,9 +140,6 @@ const AdminPortal = () => {
         console.log(data);
 
         if (data.success) {
-            // stash tokens in storage...
-            //cacheToken(data.accessToken,data.refreshToken)
-
             let mappings = {};
             const mapping_response = await fetch(`${API_URL}api/Admin/FetchMappings`, {
                 method: "POST",
@@ -157,7 +158,7 @@ const AdminPortal = () => {
                 console.log("modules_map: ", mappings.modules);              
             } else {
                 console.error("Error setting mapping cookies.")
-            }
+            };
 
             const COMPANIES = JSON.parse(mappings.companies);
             setCompanies(COMPANIES);

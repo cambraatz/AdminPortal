@@ -212,8 +212,6 @@ label {
 #widgetHeader {
     display: block;
     text-align: center;
-    /*margin: 16px 1em 0 1em;
-    margin: 5% 30% 0 30%;*/
     margin: 10% 20% 0;
     border-top: solid 1px black;
     border-left: solid 1px black;
@@ -245,6 +243,11 @@ label {
     bottom: 0;
     left: 0;
     right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.7);
     transition: opacity 500ms;
     visibility: hidden;
@@ -539,7 +542,7 @@ label {
     }
 
     #widgetHeader {
-        margin: 2% 20% 0;
+        margin: 4% 20% 0;
     }
 
     #Header {
@@ -577,7 +580,7 @@ label {
     }
 
     #widgetHeader {
-        margin: 5% 20% 0 20%;
+        margin: 6% 20% 0 20%;
     }
 
     .popupLogin {
