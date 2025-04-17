@@ -722,13 +722,13 @@ namespace AdminPortal.Server.Controllers
                         } 
                         else 
                         {
-                            return new JsonResult(new { success = false, message = "No company was found, update failed." });
+                            return new JsonResult(new { success = false, message = "Error: Update failed, no company matched active company key. Contact administrator." });
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    return new JsonResult("Error: " + ex.Message);
+                    return new JsonResult(new { success = false, message = "Error: " + ex.Message });
                 }
             }
         }
