@@ -182,10 +182,9 @@ label {
     flex-direction: row;
     margin-right: 0.5em;
 }
-
     #UserWidget p {
         margin-bottom: 1.2em;
-        font-size: 0.85em;
+        font-size: 0.75em;
     }
 
 #UserIcon {
@@ -196,7 +195,7 @@ label {
 
 #Logout button,
 #Return button {
-    height: 2em;
+    height: auto;
     width: 70px;
 }
 
@@ -416,7 +415,7 @@ label {
 
 .popup_button {
     min-height: 2em;
-    width: 60%;
+    width: 40%;
     max-width: 300px;
 }
 
@@ -481,20 +480,18 @@ label {
     font-weight: normal;
 }
 
-@media only screen and (max-width: 400px) {
+@media only screen and (min-width: 400px) {
     #UserWidget p {
-        font-size: 0.75em;
+        font-size: 0.85em;
     }
 
     #Logout button,
     #Return button {
-        height: auto;
+        height: 2em;
     }
 
     .popup_button {
-        min-height: 2em;
-        width: 40%;
-        max-width: 300px;
+        width: 60%;
     }
 }
 

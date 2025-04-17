@@ -115,37 +115,18 @@ namespace AdminPortal.Server.Controllers
         [Route("ValidateUser")]
         public async Task<JsonResult> ValidateUser()
         {
-            /*var accessToken = Request.Cookies["access_token"];
-            var refreshToken = Request.Cookies["refresh_token"];
-            if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
-            {
-                return new JsonResult(new { success = false, message = "Access token is missing" });
-            }*/
             var tokenService = new TokenService(_configuration);
             (bool success, string message) tokenAuth = tokenService.AuthorizeRequest(HttpContext);
             if (!tokenAuth.success)
             {
-                return new JsonResult(new { success = false, message = tokenAuth.message });
+                return new JsonResult(new { success = false, message = tokenAuth.message }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             var username = Request.Cookies["username"];
             if (string.IsNullOrEmpty(username))
             {
-                return new JsonResult(new { success = false, message = "Username is missing" });
+                return new JsonResult(new { success = false, message = "Username is missing" }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
-
-            /*var tokenService = new TokenService(_configuration);
-            TokenValidation result = tokenService.ValidateTokens(accessToken,refreshToken,username);
-            if (!result.IsValid)
-            {
-                return new JsonResult(new { success = false, message = "Invalid or expired access token" });
-            }
-
-            if (result.accessToken != null && result.refreshToken != null)
-            {
-                Response.Cookies.Append("access_token", result.accessToken, CookieService.accessOptions);
-                Response.Cookies.Append("refresh_token", result.refreshToken, CookieService.refreshOptions);
-            }*/
 
             string query = "select * from dbo.USERS where USERNAME COLLATE SQL_Latin1_General_CP1_CS_AS = @USERNAME";
             DataTable table = new DataTable();
@@ -177,7 +158,7 @@ namespace AdminPortal.Server.Controllers
                     Modules = new List<string>()
                 };
 
-                return new JsonResult(new { success = true, user = user }); //, accessToken = accessToken, refreshToken = refreshToken });
+                return new JsonResult(new { success = true, user = user });
             }
             else
             {
@@ -190,20 +171,11 @@ namespace AdminPortal.Server.Controllers
         [Route("AddDriver")]
         public async Task<JsonResult> AddDriver([FromBody] User newUser)
         {
-            /*
-            var company = Request.Cookies["company"];
-            if (string.IsNullOrEmpty(company))
-            {
-                return new JsonResult(new { success = false, message = "Company key is missing." });
-            }
-
-            string sqlDatasource = _configuration.GetConnectionString(company);
-            */
             var tokenService = new TokenService(_configuration);
             (bool success, string message) tokenAuth = tokenService.AuthorizeRequest(HttpContext);
             if (!tokenAuth.success)
             {
-                return new JsonResult(new { success = false, message = tokenAuth.message });
+                return new JsonResult(new { success = false, message = tokenAuth.message }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             string insertQuery = "INSERT INTO dbo.USERS(USERNAME, PASSWORD, POWERUNIT, COMPANYKEY01, COMPANYKEY02, COMPANYKEY03, COMPANYKEY04, COMPANYKEY05, " +
@@ -293,7 +265,7 @@ namespace AdminPortal.Server.Controllers
             (bool success, string message) tokenAuth = tokenService.AuthorizeRequest(HttpContext);
             if (!tokenAuth.success)
             {
-                return new JsonResult(new { success = false, message = tokenAuth.message });
+                return new JsonResult(new { success = false, message = tokenAuth.message }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             //string query = "SELECT USERNAME, PASSWORD, POWERUNIT FROM dbo.USERS WHERE USERNAME = @USERNAME";
@@ -370,7 +342,7 @@ namespace AdminPortal.Server.Controllers
             (bool success, string message) tokenAuth = tokenService.AuthorizeRequest(HttpContext);
             if (!tokenAuth.success)
             {
-                return new JsonResult(new { success = false, message = tokenAuth.message });
+                return new JsonResult(new { success = false, message = tokenAuth.message }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             string deleteQuery = "DELETE FROM dbo.USERS WHERE USERNAME = @PREVUSER";
@@ -461,7 +433,7 @@ namespace AdminPortal.Server.Controllers
                     var user = Request.Cookies["username"];
                     if (string.IsNullOrEmpty(user))
                     {
-                        return new JsonResult(new { success = false, value = "Retrieving username from cookies failed." });
+                        return new JsonResult(new { success = false, value = "Retrieving username from cookies failed." }) { StatusCode = StatusCodes.Status401Unauthorized };
                     }
 
                     if (user == driver.PrevUser)
@@ -490,7 +462,7 @@ namespace AdminPortal.Server.Controllers
             (bool success, string message) tokenAuth = tokenService.AuthorizeRequest(HttpContext);
             if (!tokenAuth.success)
             {
-                return new JsonResult(new { success = false, message = tokenAuth.message });
+                return new JsonResult(new { success = false, message = tokenAuth.message }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             string query = "delete from dbo.USERS where USERNAME=@USERNAME";
@@ -720,13 +692,13 @@ namespace AdminPortal.Server.Controllers
             (bool success, string message) tokenAuth = tokenService.AuthorizeRequest(HttpContext);
             if (!tokenAuth.success)
             {
-                return new JsonResult(new { success = false, message = tokenAuth.message });
+                return new JsonResult(new { success = false, message = tokenAuth.message }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             var company = Request.Cookies["company"];
             if (string.IsNullOrEmpty(company))
             {
-                return new JsonResult(new { success = false, message = "Company key is missing." });
+                return new JsonResult(new { success = false, message = "Company key is missing." }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             string query = "update dbo.COMPANY set COMPANYNAME=@COMPANYNAME where COMPANYKEY=@COMPANYKEY";

@@ -149,6 +149,11 @@ const AdminPortal = () => {
                 credentials: 'include'
             });
 
+            if (response.status === 401 || response.status === 403) {
+                console.error("ERROR: STATUS 401/403 CAUGHT, LOGGING OUT.");
+                Logout();
+            }
+
             if(mapping_response.ok) {
                 mappings = await mapping_response.json();
                 sessionStorage.setItem("companies_map", mappings.companies);
