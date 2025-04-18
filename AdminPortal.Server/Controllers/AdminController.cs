@@ -351,7 +351,6 @@ namespace AdminPortal.Server.Controllers
                                     "MODULE01, MODULE02, MODULE03, MODULE04, MODULE05, MODULE06, MODULE07, MODULE08, MODULE09, MODULE10) " +
                                     "VALUES (@USERNAME, @PASSWORD, @POWERUNIT, @COMPANYKEY01, @COMPANYKEY02, @COMPANYKEY03, @COMPANYKEY04, @COMPANYKEY05, " +
                                     "@MODULE01, @MODULE02, @MODULE03, @MODULE04, @MODULE05, @MODULE06, @MODULE07, @MODULE08, @MODULE09, @MODULE10)";
-
             string selectQuery = "SELECT * FROM dbo.USERS";
 
             DataTable table = new DataTable();
@@ -465,6 +464,16 @@ namespace AdminPortal.Server.Controllers
                 return new JsonResult(new { success = false, message = tokenAuth.message }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
+            var username = Request.Cookies["username"];
+            if (string.IsNullOrEmpty(username))
+            {
+                return new JsonResult(new { success = false, message = "Username is missing" }) { StatusCode = StatusCodes.Status401Unauthorized };
+            }
+            else if (username.Equals(USERNAME))
+            {
+                return new JsonResult(new { success = false, duplicate = true, message = "Deleting the active user is not allowed, contact administrator." });
+            }
+
             string query = "delete from dbo.USERS where USERNAME=@USERNAME";
             string selectQuery = "SELECT * FROM dbo.USERS";
 
@@ -500,7 +509,7 @@ namespace AdminPortal.Server.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return new JsonResult(new { success = false, error = "Error: " + ex.Message });
+                    return new JsonResult(new { success = false, duplicate = false, error = "Error: " + ex.Message });
 
                 }
             }
@@ -540,7 +549,6 @@ namespace AdminPortal.Server.Controllers
 
         [HttpGet]
         [Route("CollectCompanies")]
-
         public JsonResult CollectCompanies()
         {
             string query = "select * from dbo.COMPANY";

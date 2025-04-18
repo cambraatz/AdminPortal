@@ -5,6 +5,7 @@ const LoadingSpinner = () => {
     return (
         <div className="spinner-cont">
             <div className="loading-spinner"></div>
+            <p className="lading-text">Loading...</p>
         </div>
     );
 };

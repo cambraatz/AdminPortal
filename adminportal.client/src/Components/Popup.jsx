@@ -16,7 +16,7 @@ const Popup = (props) => {
         const modules = JSON.parse(sessionStorage.getItem("modules_map") || "{}");
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <div className="input_wrapper">
                         <label>Username</label>
                         <input type="text" id="username" value={props.credentials.USERNAME} className="input_form" onChange={props.handleUpdate}/>
@@ -97,7 +97,7 @@ const Popup = (props) => {
         const companies = JSON.parse(sessionStorage.getItem("companies_map") || "{}");
         const modules = JSON.parse(sessionStorage.getItem("modules_map") || "{}");
         return(
-            <div className="popupLoginContent">
+            <div className="popupContent">
                 <div className="input_wrapper">
                     <label>Username</label>
                     <input type="text" id="username" value={props.credentials.USERNAME} className="input_form" onChange={props.handleUpdate} required/>
@@ -168,7 +168,7 @@ const Popup = (props) => {
     else if(props.message === "Find User"){
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <div className="input_wrapper">
                         <label>Username</label>
                         <input type="text" id="username" value={props.credentials.USERNAME} className="input_form" onChange={props.handleUpdate}/>
@@ -193,7 +193,7 @@ const Popup = (props) => {
     else if(props.message === "Change Company"){
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <div className="input_wrapper">
                         <label>Company Name</label>
                         <input type="text" id="company" value={props.company} className="input_form" onChange={props.handleUpdate}/>
@@ -219,7 +219,7 @@ const Popup = (props) => {
         const user = props.credentials.USERNAME;
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="success" src={Success} alt="success"/>
                     <p>{user} was added successfully!</p>
                 </div>
@@ -234,7 +234,7 @@ const Popup = (props) => {
         const user = props.credentials.USERNAME;
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="success" src={Success} alt="success"/>
                     <p>{user} successfully updated!</p>
                 </div>
@@ -249,7 +249,7 @@ const Popup = (props) => {
         const user = props.credentials.USERNAME;
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="success" src={Success} alt="success"/>
                     <p>{user} successfully deleted!</p>
                 </div>
@@ -264,7 +264,7 @@ const Popup = (props) => {
         //const company = props.company;
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="success" src={Success} alt="success"/>
                     <p>Company successfully updated!</p>
                 </div>
@@ -274,7 +274,7 @@ const Popup = (props) => {
     else if(props.message === "Success"){
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="success" src={Success} alt="success"/>
                     <p>Delivery successfully updated!</p>
                 </div>
@@ -288,9 +288,19 @@ const Popup = (props) => {
     else if(props.message === "Fail"){
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="fail" src={Fail} alt="fail"/>
                     <p>Oops! Something went wrong, please try again.</p>
+                </div>
+            </>
+        )
+    }
+    else if(props.message === "ActiveUserFail"){
+        return(
+            <>
+                <div className="popupContent">
+                    <img id="fail" src={Fail} alt="fail"/>
+                    <p>Cannot delete active user.</p>
                 </div>
             </>
         )
@@ -302,7 +312,7 @@ const Popup = (props) => {
     else if(props.message === "Admin_Add Fail"){
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="fail" src={Fail} alt="fail"/>
                     <p>Oops! User already exists, please try again.</p>
                 </div>
@@ -314,7 +324,7 @@ const Popup = (props) => {
         const user = props.credentials.USERNAME;
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="success" src={Success} alt="success"/>
                     <p>{user} was logged out successfully!</p>
                 </div>
@@ -325,7 +335,7 @@ const Popup = (props) => {
     else if(props.message === "Token Fail"){
         return(
             <>
-                <div className="popupLoginContent">
+                <div className="popupContent">
                     <img id="fail" src={Fail} alt="fail"/>
                     <p>Token validation failed, logging out.</p>
                 </div>

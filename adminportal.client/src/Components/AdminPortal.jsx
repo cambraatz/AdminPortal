@@ -124,18 +124,6 @@ const AdminPortal = () => {
             } else {
                 returnOnFail("Something went wrong setting the mappings to cookies.");
             };
-
-            /*const COMPANIES = JSON.parse(mappings.companies);
-            setCompanies(COMPANIES);
-
-            const MODULES = JSON.parse(mappings.modules);
-            setModules(MODULES);
-            
-            setCompany(COMPANIES[data.user.ActiveCompany]);
-            setActiveCompany(COMPANIES[data.user.ActiveCompany]);
-    
-            setCurrUser(data.user.Username);
-            setLoading(false);*/
         } else {
             returnOnFail("Validation error, logging out.");
         }
@@ -604,19 +592,26 @@ const AdminPortal = () => {
         const data = await response.json();
         //console.log(data);
 
+        // init popup duration and conditionally render popup response...
+        let wait;
         if (data.success) {
+            wait = SUCCESS_WAIT;
             setPopup("Delete Success");
-            setTimeout(() => {
-                closePopup();
-            },1000)
+        } 
+
+        wait = FAIL_WAIT;
+        if (data.duplicate) {
+            console.error(data.message);
+            setPopup("ActiveUserFail");
         }
         else {
-            console.error("delete driver failed");
+            console.error(data.message);
             setPopup("Fail");
-            setTimeout(() => {
-                closePopup();
-            },2000)
         }
+
+        setTimeout(() => {
+            closePopup();
+        },wait)
     }
 
     /*/////////////////////////////////////////////////////////////////
@@ -710,9 +705,6 @@ const AdminPortal = () => {
         <div id="webpage">
             {loading ? (
                 <>
-                    {/*<div className="loading-container">
-                        <p>Loading...</p>
-                    </div>*/}
                     <LoadingSpinner />
                 </>
             ) : (
