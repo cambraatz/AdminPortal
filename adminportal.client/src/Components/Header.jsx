@@ -17,34 +17,6 @@ const Header = (props) => {
         setUser(props.currUser);
     }, [props.company, props.currUser]);
 
-    /*
-    const deliveryHeader = () => {
-        let header = (
-            <>
-                <div id="title_div">
-                    {company.map((word, index) => (<h4 className="TCS_title" key={index}>{word}</h4>))}
-                </div>
-                <div className="sticky_header" onClick={props.onClick}>
-                    <div id="main_title">
-                        <h1>Driver Manifest</h1>
-                        <h2 id="title_dash">-</h2>
-                        <h2>{props.title}</h2>
-                    </div>
-                    <UserWidget 
-                        company={company}
-                        driver={user} 
-                        status={props.status} 
-                        header={props.header} 
-                        MFSTDATE={props.MFSTDATE} 
-                        POWERUNIT={props.POWERUNIT} 
-                        toggle={props.toggle}/>
-                </div>
-            </>
-        );
-        
-        return header;
-    }*/
-
     const deliveryCondition = () => {
         let condition = (
             <div id="widgetHeader">

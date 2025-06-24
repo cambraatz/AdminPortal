@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import userIcon from "../assets/userIcon.png";
 import { useNavigate } from "react-router-dom";
-import { translateDate, 
-        logout,
-        API_URL } from '../Scripts/helperFunctions';
 import toggleDots from '../assets/Toggle_Dots.svg';
 import { Logout } from '../Scripts/Logout';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const UserWidget = (props) => {
     const [user, setUser] = useState(props.driver);
@@ -36,47 +35,6 @@ const UserWidget = (props) => {
 
     const navigate = useNavigate();
 
-    /*const handleLogout = () => {
-        logout();
-        if (localStorage.getItem('accessToken') == null && localStorage.getItem('refreshToken') == null) {
-            console.log("Successful log out operation!");
-        }
-        setUser("Signed Out");
-        navigate('/', { state: props.company });
-    }
-
-    async function Logout() {
-        clearMemory();
-        const response = await fetch(`${API_URL}api/Admin/Logout`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            },
-        })
-        if (response.ok) {
-            console.log("Logout Successful!");
-            setTimeout(() => {
-                window.location.href = `https://www.login.tcsservices.com`;
-            },1000)
-        } else {
-            console.alert("Cookie removal failed, Logout failure.")
-        }
-    }*/
-
-    /*
-    const handleClick = () => {
-        document.getElementById("popupLogoutWindow").style.visibility = "visible";
-        document.getElementById("popupLogoutWindow").style.opacity = 1;
-        document.getElementById("popupLogoutWindow").style.pointerEvents = "auto";
-    };
-
-    const handleClose = () => {
-        document.getElementById("popupLogoutWindow").style.visibility = "hidden";
-        document.getElementById("popupLogoutWindow").style.opacity = 0;
-        document.getElementById("popupLogoutWindow").style.pointerEvents = "none";
-    };
-    */
-
     //console.log("header: ", props.header)
 
     const [status, setStatus] = useState(props.toggle);
@@ -101,7 +59,7 @@ const UserWidget = (props) => {
     }
 
     async function Return() {    
-        const response = await fetch(`${API_URL}api/Admin/Return`, {
+        const response = await fetch(`${API_URL}v1/sessions/return`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8'

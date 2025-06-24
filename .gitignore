@@ -2,3 +2,8 @@ AdminPortal.Server/bin
 AdminPortal.Server/obj
 .vs/
 .vscode/
+
+AdminPortal.Server/log/
+
+adminportal.client/localhost+2-key.pem
+adminportal.client/localhost+2.pem

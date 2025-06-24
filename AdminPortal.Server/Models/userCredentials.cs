@@ -1,8 +1,7 @@
 ﻿namespace AdminPortal.Server.Models
 {
-    public class DriverReplacement
+    public class UserCredentials
     {
-        public string? PrevUser {  get; set; }
         public string? Username { get; set; }
         public string? Password { get; set; }
         public string? Powerunit { get; set; }

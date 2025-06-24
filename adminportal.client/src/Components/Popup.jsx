@@ -305,6 +305,26 @@ const Popup = (props) => {
             </>
         )
     }
+    else if(props.message === "UNPUConflictFail"){
+        return(
+            <>
+                <div className="popupContent">
+                    <img id="fail" src={Fail} alt="fail"/>
+                    <p>Update failed, contact administrator.</p>
+                </div>
+            </>
+        )
+    }
+    else if(props.message === "UNConflictFail"){
+        return(
+            <>
+                <div className="popupContent">
+                    <img id="fail" src={Fail} alt="fail"/>
+                    <p>Username/Powerunit already in use.</p>
+                </div>
+            </>
+        )
+    }
     //
     //
     // ACTIVE

@@ -11,11 +11,13 @@ import { useLocation } from "react-router-dom";
 import Header from './Header';
 import Popup from './Popup';
 import Footer from './Footer';
-import { API_URL,
+import { //API_URL,
     showFailFlag,
     FAIL_WAIT, SUCCESS_WAIT } from '../Scripts/helperFunctions';
 import { Logout } from '../Scripts/Logout';
 import LoadingSpinner from './LoadingSpinner';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 /*/////////////////////////////////////////////////////////////////////
  
@@ -79,51 +81,41 @@ const AdminPortal = () => {
         setLoading(true);
 
         // direct bypass to powerunit validation...
-        const response = await fetch(API_URL + "api/Admin/ValidateUser", {
-            //body: JSON.stringify(username),
-            method: "POST",
+        //const response = await fetch(API_URL + "api/Admin/ValidateUser", {
+        const response = await fetch(API_URL + "v1/sessions/me", {
+            method: "GET",
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             },
             credentials: 'include'
         });
 
-        if (response.status === 401 || response.status === 403) {
+        /*if (response.status === 401 || response.status === 403) {
             returnOnFail("Status 401/403 returned, logging out.");
-        }
+        }*/
 
-        const data = await response.json();
+        //const data = await response.json();
         //console.log(data);
 
-        if (data.success) {
-            let mappings = {};
-            const mapping_response = await fetch(`${API_URL}api/Admin/FetchMappings`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8'
-                },
-                credentials: 'include'
-            });
+        if (response.ok) {
+            const data = await response.json();
 
-            if(mapping_response.ok) {
-                mappings = await mapping_response.json();
-                sessionStorage.setItem("companies_map", mappings.companies);
-                sessionStorage.setItem("modules_map", mappings.modules);
-                
-                const COMPANIES = JSON.parse(mappings.companies);
-                setCompanies(COMPANIES);
+            sessionStorage.setItem("companies_map", data.companies);
+            const company_map = JSON.parse(data.companies);
+            console.log("companies_map: ", company_map);
 
-                const MODULES = JSON.parse(mappings.modules);
-                setModules(MODULES);
-                
-                setCompany(COMPANIES[data.user.ActiveCompany]);
-                setActiveCompany(COMPANIES[data.user.ActiveCompany]);
-        
-                setCurrUser(data.user.Username);
-                setLoading(false);
-            } else {
-                returnOnFail("Something went wrong setting the mappings to cookies.");
-            };
+            sessionStorage.setItem("modules_map", data.modules);
+            const module_map = JSON.parse(data.modules);
+            console.log("modules_map: ", module_map);
+
+            setCompanies(company_map);
+            setModules(module_map),
+
+            setCompany(company_map[data.user.ActiveCompany]);
+            setActiveCompany(company_map[data.user.ActiveCompany]);
+
+            setCurrUser(data.user.Username);
+            setLoading(false);
         } else {
             returnOnFail("Validation error, logging out.");
         }
@@ -188,18 +180,6 @@ const AdminPortal = () => {
                 target.classList.remove("invalid_input");
             }
         })
-        /*if (document.getElementById("username") && document.getElementById("username").classList.contains("invalid_input")) {
-            document.getElementById("username").classList.remove("invalid_input");
-        }
-        if (document.getElementById("password") && document.getElementById("password").classList.contains("invalid_input")) {
-            document.getElementById("password").classList.remove("invalid_input");
-        }
-        if (document.getElementById("powerunit") && document.getElementById("powerunit").classList.contains("invalid_input")) {
-            document.getElementById("powerunit").classList.remove("invalid_input");
-        }
-        if (document.getElementById("company") && document.getElementById("company").classList.contains("invalid_input")) {
-            document.getElementById("company").classList.remove("invalid_input");
-        }*/
     }
 
     /* State management functions... */
@@ -267,8 +247,8 @@ const AdminPortal = () => {
             return;
         }
 
-        const response = await fetch(API_URL + "api/Admin/SetCompany", {
-            body: JSON.stringify(company),
+        //const response = await fetch(API_URL + "api/Admin/SetCompany", {
+        const response = await fetch(API_URL + "v1/companies/" + company, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json',
@@ -281,11 +261,11 @@ const AdminPortal = () => {
         }
 
         const data = await response.json();
-        //console.log("data: ",data);
+        console.log("data: ",data);
 
-        if (data.success) {
+        if (response.ok) {
             // set active, company is updated dynamically...
-            setActiveCompany(data.company);
+            setActiveCompany(company);
             setPopup("Company Success");
             
             setTimeout(() => {
@@ -363,9 +343,10 @@ const AdminPortal = () => {
             Modules: Object.keys(checkedModules).filter(key => checkedModules[key])
         };
 
-        const response = await fetch(API_URL + "api/Admin/AddDriver", {
+        //const response = await fetch(API_URL + "api/Admin/AddDriver", {
+        const response = await fetch(API_URL + "v1/users", {
             body: JSON.stringify(formData),
-            method: "PUT",
+            method: "POST",
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             },
@@ -377,16 +358,21 @@ const AdminPortal = () => {
         }
 
         const data = await response.json();
-        //console.log(data);
-        if (data.success) {
+        console.log(data);
+
+        if (response.ok) {
             setPopup("Add Success");
             setTimeout(() => {
                 closePopup();
             },SUCCESS_WAIT);
         } else {
-            if (data.error.includes("Violation of PRIMARY KEY")) {
+            if (response.status === 409) {
                 setPopup("Admin_Add Fail");
-            } else {
+            } 
+            else if (data.message.includes("Username is already in use")) {
+                setPopup("Admin_Add Fail");
+            }
+            else {
                 setPopup("Fail");
             }
             setTimeout(() => {
@@ -425,15 +411,9 @@ const AdminPortal = () => {
             return;
         }
 
-        const body_data ={
-            USERNAME: credentials.USERNAME,
-            PASSWORD: null,
-            POWERUNIT: null
-        }
-
-        const response = await fetch(API_URL + "api/Admin/PullDriver", {
-            body: JSON.stringify(body_data),
-            method: "POST",
+        //const response = await fetch(API_URL + "api/Admin/PullDriver", {
+        const response = await fetch(API_URL + "v1/users/" + credentials.USERNAME, {
+            method: "GET",
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             },
@@ -442,32 +422,33 @@ const AdminPortal = () => {
 
         if (response.status === 401 || response.status === 403) {
             returnOnFail("Status 401/403 returned, logging out.");
+            return;
         }
 
-        const data = await response.json()
-        //console.log(data);
-
         // catch failed request and prevent behavior...
-        if (data.success) {
-            const user = data.user;
+        if (response.ok) {
+            const user = await response.json()
+            console.log(user);
+
+            //const user = data;
             setPreviousUser(credentials.USERNAME);
             setCredentials({
-                USERNAME: user.USERNAME,
-                PASSWORD: user.PASSWORD,
-                POWERUNIT: user.POWERUNIT
+                USERNAME: user.Username,
+                PASSWORD: user.Password,
+                POWERUNIT: user.Powerunit
             });
 
-            const check_mods = {};
+            const checked_mods = {};
             Object.keys(modules).forEach((url) => {
-                check_mods[url] = user.MODULES.includes(url);
+                checked_mods[url] = user.Modules.includes(url);
             });
-            setCheckedModules(check_mods);
+            setCheckedModules(checked_mods);
 
-            const check_comps = {};
+            const checked_comps = {};
             Object.keys(companies).forEach((key) => {
-                check_comps[key] = user.COMPANIES.includes(key);
+                checked_comps[key] = user.Companies.includes(key);
             });
-            setCheckedCompanies(check_comps);
+            setCheckedCompanies(checked_comps);
 
             setPopup("Edit User");
         }
@@ -532,11 +513,12 @@ const AdminPortal = () => {
         // package driver credentials and attempt to replace...
         const body_data = {
             ...credentials,
-            PREVUSER: previousUser,
+            //PREVUSER: previousUser,
             COMPANIES: Object.keys(checkedCompanies).filter(key => checkedCompanies[key]),
             MODULES: Object.keys(checkedModules).filter(key => checkedModules[key])
         }
-        const response = await fetch(API_URL + "api/Admin/ReplaceDriver", {
+        //const response = await fetch(API_URL + "api/Admin/ReplaceDriver", {
+        const response = await fetch (API_URL + "v1/users/" + previousUser, {
             body: JSON.stringify(body_data),
             method: "PUT",
             headers: {
@@ -549,16 +531,16 @@ const AdminPortal = () => {
             returnOnFail("Status 401/403 returned, logging out.");
         }
 
-        const data = await response.json();
+        //const data = await response.json();
         //console.log(data);
 
-        if (data.success) {
+        if (response.ok) {
             setPreviousUser("add new");
             setPopup("Update Success");
         }
         else {
-            console.trace("update driver failed");
-            setPopup("Fail");
+            console.error(response.message);
+            setPopup("UNPUConflictFail");
         }
 
         setTimeout(() => {
@@ -580,7 +562,8 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     async function removeDriver() {
-        const response = await fetch(API_URL + "api/Admin/DeleteDriver?USERNAME=" + credentials.USERNAME, {
+        //const response = await fetch(API_URL + "api/Admin/DeleteDriver?USERNAME=" + credentials.USERNAME, {
+        const response = await fetch(API_URL + "v1/users/" + credentials.USERNAME, {
             method: "DELETE",
             credentials: 'include'
         })
@@ -589,29 +572,29 @@ const AdminPortal = () => {
             returnOnFail("Status 401/403 returned, logging out.");
         }
 
-        const data = await response.json();
+        //const data = await response.json();
         //console.log(data);
 
         // init popup duration and conditionally render popup response...
-        let wait;
-        if (data.success) {
-            wait = SUCCESS_WAIT;
+        if (response.ok) {
             setPopup("Delete Success");
+            setTimeout(() => {
+                closePopup();
+            },SUCCESS_WAIT)
         } 
-
-        wait = FAIL_WAIT;
-        if (data.duplicate) {
-            console.error(data.message);
-            setPopup("ActiveUserFail");
-        }
         else {
+            const data = await response.json();
             console.error(data.message);
-            setPopup("Fail");
+            if (data.duplicate) {
+                setPopup("ActiveUserFail");
+            }
+            else { 
+                setPopup("Fail");
+            }
+            setTimeout(() => {
+                closePopup();
+            },FAIL_WAIT)
         }
-
-        setTimeout(() => {
-            closePopup();
-        },wait)
     }
 
     /*/////////////////////////////////////////////////////////////////
