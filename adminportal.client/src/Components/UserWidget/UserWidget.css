@@ -1,0 +1,133 @@
+#uw_div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 1% 4%;
+    justify-content: flex-end;
+    border-top: 1px solid #353535;
+    border-bottom: 1px solid #353535;
+    box-shadow: 0px 3px 4px #00000020;
+}
+
+#uw_content {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+}
+
+#uw_icon {
+    height: 20px;
+    width: 20px;
+    margin-right: 5px;
+}
+
+#uw_icon_div {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 20px;
+    flex-direction: row;
+    margin-right: 0.5em;
+}
+    #uw_icon_div p {
+        margin-bottom: 1.2em;
+        font-size: 0.75em;
+    }
+
+#collapseToggle {
+    width: 15%;
+    height: 10px;
+    padding-bottom: 2px;
+    font-size: x-small;
+    background-color: #e0eaf3;
+    border: 1px solid gray;
+    border-bottom: 0;
+    border-radius: 5px 5px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    left: 42.5%;
+    bottom: 0;
+    z-index: 10;
+    transition: all 2s ease-in-out;
+}
+
+    #collapseToggle img {
+        width: 25%;
+        padding-top: 2px;
+    }
+
+#uw_logout button,
+#uw_return button {
+    height: auto;
+    width: 70px;
+}
+
+#uw_return {
+    margin-right: 0.5em;
+}
+
+#uw_navButtons {
+    display: flex;
+    flex-direction: row;
+}
+
+@media only screen and (min-width: 400px) {
+    #uw_icon_div p {
+        font-size: 0.85em;
+    }
+
+    #uw_logout button,
+    #uw_return button {
+        height: 2em;
+    }
+}
+
+@media only screen and (min-width: 630px) {
+    #uw_return {
+        margin-right: 0;
+    }
+
+    #uw_navButtons {
+        gap: 5%;
+    }
+
+    #uw_icon_div {
+        height: 30px;
+        margin-right: 0.5em;
+        margin-right: 1em;
+    }
+
+        #uw_icon_div p {
+            font-size: 1em;
+        }
+
+    #uw_icon {
+        height: 25px;
+        width: 25px;
+        margin-right: 5px;
+    }
+
+    #collapseToggle {
+        width: 8%;
+        left: 46%;
+    }
+
+    #collapseToggle img {
+        width: 25%;
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    #collapseToggle {
+        width: 6%;
+        left: 47%;
+    }
+
+    #collapseToggle img {
+        width: 25%;
+    }
+}

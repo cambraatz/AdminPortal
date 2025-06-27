@@ -1,7 +1,8 @@
-import Success from '../assets/success.svg';
-import Fail from '../assets/error.svg';
+import Success from '../../assets/success.svg';
+import Fail from '../../assets/error.svg';
+import "./Popup.css";
 
-const Popup = (props) => {
+const PopupContent = (props) => {
     if(props.message === null){
         return(
             <h5>this shouldnt happen...</h5>
@@ -364,4 +365,4 @@ const Popup = (props) => {
     }
 };
 
-export default Popup;
+export default PopupContent;

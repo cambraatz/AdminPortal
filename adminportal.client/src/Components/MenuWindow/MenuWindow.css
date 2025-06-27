@@ -1,0 +1,49 @@
+.admin_div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 20% 5%;
+    padding: 1em 0;
+    border: solid 1px black;
+    border-radius: 0 0 5px 5px;
+    background-color: #e0eaf3;
+}
+    .admin_div button {
+        margin: 1em 5%;
+        width: 50%;
+        height: 3em;
+        max-width: 300px;
+    }
+
+.mw_header {
+    display: block;
+    text-align: center;
+    margin: 10% 20% 0;
+    border-top: solid 1px black;
+    border-left: solid 1px black;
+    border-right: solid 1px black;
+    border-radius: 5px 5px 0 0;
+    background-color: #5A89BB;
+    color: white;
+}
+
+    .mw_header h4 {
+        margin: 0;
+    }
+
+.prompt {
+    display: block;
+    padding: 8px 0;
+}
+
+@media only screen and (min-width: 630px) {
+    #widgetHeader {
+        margin: 4% 20% 0;
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    #widgetHeader {
+        margin: 6% 20% 0 20%;
+    }
+}

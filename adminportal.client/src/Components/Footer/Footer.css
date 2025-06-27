@@ -1,0 +1,15 @@
+#footer {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    background-color: white;
+    z-index: -1;
+}
+
+#footer_text {
+    font-size: 0.65em;
+    margin-block: 4%;
+    margin-inline: 4%;
+}

@@ -8,9 +8,10 @@ Update Date: 4/17/2025
 
 import { useState, useEffect } from 'react';
 import { useLocation } from "react-router-dom";
-import Header from './Header';
-import Popup from './Popup';
-import Footer from './Footer';
+import Header from './Header/Header';
+import Popup from './Popup/Popup';
+import Footer from './Footer/Footer';
+import MenuWindow from './MenuWindow/MenuWIndow';
 import { //API_URL,
     showFailFlag,
     FAIL_WAIT, SUCCESS_WAIT } from '../Scripts/helperFunctions';
@@ -42,7 +43,7 @@ const AdminPortal = () => {
     const [loading,setLoading] = useState(true);
 
     // header toggle state...
-    const [header,setHeader] = useState(location.state ? location.state.header : "open");
+    //const [header,setHeader] = useState(location.state ? location.state.header : "open");
 
     // driver credentials state...
     const [credentials, setCredentials] = useState({
@@ -112,7 +113,7 @@ const AdminPortal = () => {
             setModules(module_map),
 
             setCompany(company_map[data.user.ActiveCompany]);
-            setActiveCompany(company_map[data.user.ActiveCompany]);
+            setActiveCompany(company_map[data.user.ActiveCompany].split(' '));
 
             setCurrUser(data.user.Username);
             setLoading(false);
@@ -120,51 +121,6 @@ const AdminPortal = () => {
             returnOnFail("Validation error, logging out.");
         }
     }
-
-    /*/////////////////////////////////////////////////////////////////
-    // initialize and manage collapsible header behavior...
-    [void] : collapseHeader(event) {
-        if (e.target.id === "collapseToggle" or "toggle_dots"):
-            open/close header - do opposite of current "header" state
-    }
-    *//////////////////////////////////////////////////////////////////
-
-    const collapseHeader = (e) => {
-        if (e.target.id === "collapseToggle" || e.target.id === "toggle_dots") {
-            setHeader(prev => (prev === "open" ? "close" : "open"));
-        }
-    }
-
-    /*/////////////////////////////////////////////////////////////////
-    [void] : openPopup() {
-        make popup window visible on screen
-        enable on click behavior
-    }
-
-    [void] : closePopup() {
-        self explanatory closing of "popupLoginWindow"
-        setStatus("") and setMessage(null) - reset state data
-    }
-    *//////////////////////////////////////////////////////////////////
-
-    var POPUP_ID = "popupWindow";
-    const openPopup = () => {
-        const target = document.getElementById(POPUP_ID);
-        target.style.visibility = "visible";
-        target.style.opacity = 1;
-        target.style.pointerEvents = "auto";  
-    };
-
-    const closePopup = () => {
-        const target = document.getElementById(POPUP_ID);
-        target.style.visibility = "hidden";
-        target.style.opacity = 0;
-        target.style.pointerEvents = "none";
-
-        clearStyling();
-        setCheckedCompanies({});
-        setCheckedModules({});
-    };
 
     /*/////////////////////////////////////////////////////////////////
     [void] : clearStyling() {
@@ -265,7 +221,7 @@ const AdminPortal = () => {
 
         if (response.ok) {
             // set active, company is updated dynamically...
-            setActiveCompany(company);
+            setActiveCompany(company.split(' '));
             setPopup("Company Success");
             
             setTimeout(() => {
@@ -624,6 +580,7 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     async function pressButton(e) {
+        console.log(e.target);
         setCredentials({
             USERNAME: "",
             PASSWORD: "",
@@ -634,23 +591,54 @@ const AdminPortal = () => {
             //collectOptions();
         }
 
+        let message;
         // handle main admin button popup generation
         switch(e.target.innerText){
             case "Add New User":
-                setPopup("Add User");
+                //setPopup("Add User");
+                message = "Add User";
                 setPreviousUser("add new");
                 break;
             case "Change/Remove User":
-                setPopup("Find User");
+                //setPopup("Find User");
+                message = "Find User";
                 break;
             case "Edit Company Name":
-                setPopup("Change Company");
+                //setPopup("Change Company");
+                message = "Change Company";
                 break;
             default:
                 break;
         }
-        openPopup();
+        openPopup(message);
     }
+
+    /*/////////////////////////////////////////////////////////////////
+    [void] : openPopup() {
+        make popup window visible on screen
+        enable on click behavior
+    }
+
+    [void] : closePopup() {
+        self explanatory closing of "popupLoginWindow"
+        setStatus("") and setMessage(null) - reset state data
+    }
+    *//////////////////////////////////////////////////////////////////
+
+    const [popupVisible, setVisible] = useState(false);
+    const openPopup = (message) => {
+        setPopup(message);
+        setVisible(true);
+        console.log(`popupVisible: ${popupVisible}`);
+    };
+
+    const closePopup = () => {
+        setVisible(false);
+
+        clearStyling();
+        setCheckedCompanies({});
+        setCheckedModules({});
+    };
 
     const [companies,setCompanies] = useState([]);
     const [modules,setModules] = useState([]);
@@ -683,6 +671,9 @@ const AdminPortal = () => {
         "checkboxChange": handleCheckboxChange
     };
 
+    const header = location.state ? location.state.header : "open";
+    const collapsed = header === "open" ? true : false;
+
     // render template...
     return(
         <div id="webpage">
@@ -693,44 +684,35 @@ const AdminPortal = () => {
             ) : (
                 <>
                     <Header
-                        company={activeCompany}
+                        company={activeCompany ? activeCompany : "Transportation Computer Support, LLC."}
                         title="Admin Portal"
-                        alt="What would you like to do?"
-                        status="admin"
+                        subtitle="Add/Update Company Records"
                         currUser={currUser}
-                        MFSTDATE={null} 
-                        POWERUNIT={null}
-                        STOP={null}
-                        PRONUMBER={null}
-                        MFSTKEY={null}
-                        toggle={header}
-                        onClick={collapseHeader}
-                        setPopup={setPopup}
+                        logoutButton={true}
+                        prompt="What would you like to do?"
+                        collapsed={collapsed}
                     />
-                    <div id="admin_div">
-                        <button type="button" onClick={pressButton}>Add New User</button>
-                        <button type="button" onClick={pressButton}>Change/Remove User</button>
-                        <button type="button" onClick={pressButton}>Edit Company Name</button>
-                    </div>
-                    <div id={POPUP_ID} className="overlay">
-                        <div className="popupLogin">
-                            <div id="popupAddExit" className="content">
-                                <h1 id="close_add" className="popupLoginWindow" onClick={closePopup}>&times;</h1>
-                            </div>
-                            <Popup 
-                                message={popup}
-                                powerunit={null}
-                                handleUpdate={handleUpdate}
-                                credentials={credentials}
-                                company={company}
-                                companies={companies}
-                                modules={modules}
-                                checkedCompanies={checkedCompanies}
-                                checkedModules={checkedModules}
-                                functions={functions}
-                            />
-                        </div>
-                    </div>
+                    <MenuWindow 
+                        prompt="What would you like to do?"
+                        header="null"
+                        pressButton={pressButton}
+                    />
+                    {popupVisible && (
+                        <Popup 
+                            message={popup}
+                            powerunit={null}
+                            handleUpdate={handleUpdate}
+                            credentials={credentials}
+                            company={company}
+                            companies={companies}
+                            modules={modules}
+                            checkedCompanies={checkedCompanies}
+                            checkedModules={checkedModules}
+                            functions={functions}
+                            closePopup={closePopup}
+                            isVisible={popupVisible}
+                        />
+                    )}
                     <Footer id="footer"/>
                 </>
             )}

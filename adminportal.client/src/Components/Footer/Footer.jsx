@@ -1,6 +1,8 @@
-const Footer = (props) => {
+import "./Footer.css";
+
+const Footer = () => {
     return(
-        <div id={props.id}>
+        <div id="footer">
             <p id="footer_text">Developed by Transportation Computer Support, LLC.</p>
         </div>
     )
