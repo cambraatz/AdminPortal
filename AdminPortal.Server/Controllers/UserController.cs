@@ -178,7 +178,7 @@ namespace AdminPortal.Server.Controllers
             if (success)
             {
                 _logger.LogInformation("'{Username}' was deleted successfully from records.", username);
-                return NoContent();
+                return NoContent(); // 204
             }
             else
             {

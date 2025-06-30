@@ -12,11 +12,17 @@ import Header from './Header/Header';
 import Popup from './Popup/Popup';
 import Footer from './Footer/Footer';
 import MenuWindow from './MenuWindow/MenuWIndow';
-import { //API_URL,
+import { 
     showFailFlag,
-    FAIL_WAIT, SUCCESS_WAIT } from '../Scripts/helperFunctions';
-import { Logout } from '../Scripts/Logout';
+    FAIL_WAIT, 
+    SUCCESS_WAIT 
+} from '../Scripts/helperFunctions';
+import { Logout } from '../Scripts/apiCalls';
 import LoadingSpinner from './LoadingSpinner';
+
+import { updateUserInDB, removeUserFromDB, addUserToDB, fetchUserFromDB } from '../utils/api/users';
+import { updateCompanyInDB } from '../utils/api/companies';
+import { validateSession } from '../utils/api/sessions';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -56,12 +62,19 @@ const AdminPortal = () => {
     const [currUser, setCurrUser] = useState("admin");
     const [previousUser, setPreviousUser] = useState("");
 
-    // "Edit User", "Find User", "Change Company"...
-    const [popup, setPopup] = useState("Edit User");
+    // "users_update", "Find User", "Change Company"...
+    const DEFAULT_POPUP = "users_update"
+    const [popup, setPopup] = useState(DEFAULT_POPUP);
 
     // company (forms) and activeCompany (rendered)...
     const [company, setCompany] = useState();
     const [activeCompany, setActiveCompany] = useState();
+
+    const [inputErrors, setInputErrors] = useState({ 
+        company: "",
+        username: "",
+        powerunit: ""
+     });
 
     // ensure company, token and navigation validity onLoad...
     useEffect(() => {  
@@ -70,9 +83,22 @@ const AdminPortal = () => {
 
     /* Page rendering helper functions... */
 
-    const returnOnFail = (message) => {
-        console.error(`Error: ${message}`);
-        setPopup("Fail");
+    const successPopup = (popupType) => {
+        setPopup(popupType);
+        setTimeout(() => {
+            closePopup();
+        },SUCCESS_WAIT)
+    }
+
+    const failedPopup = (popupType) => {
+        setPopup(popupType);
+        setTimeout(() => {
+            closePopup();
+        },FAIL_WAIT)
+    }
+
+    const returnOnFail = (popupType="fail") => {
+        setPopup(popupType);
         setTimeout(() => {
             Logout();
         },FAIL_WAIT);
@@ -81,45 +107,31 @@ const AdminPortal = () => {
     async function validateUser(){
         setLoading(true);
 
-        // direct bypass to powerunit validation...
-        //const response = await fetch(API_URL + "api/Admin/ValidateUser", {
-        const response = await fetch(API_URL + "v1/sessions/me", {
-            method: "GET",
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            },
-            credentials: 'include'
-        });
-
-        /*if (response.status === 401 || response.status === 403) {
-            returnOnFail("Status 401/403 returned, logging out.");
-        }*/
-
-        //const data = await response.json();
-        //console.log(data);
-
+        const response = await validateSession(API_URL);
         if (response.ok) {
             const data = await response.json();
 
             sessionStorage.setItem("companies_map", data.companies);
             const company_map = JSON.parse(data.companies);
+            setCompanies(company_map);
             console.log("companies_map: ", company_map);
 
             sessionStorage.setItem("modules_map", data.modules);
             const module_map = JSON.parse(data.modules);
+            setModules(module_map);
             console.log("modules_map: ", module_map);
 
-            setCompanies(company_map);
-            setModules(module_map),
-
+            console.log(data);
+            console.log(company_map[data.user.ActiveCompany]);
             setCompany(company_map[data.user.ActiveCompany]);
             setActiveCompany(company_map[data.user.ActiveCompany].split(' '));
 
             setCurrUser(data.user.Username);
             setLoading(false);
-        } else {
-            returnOnFail("Validation error, logging out.");
+            return;
         }
+
+        returnOnFail("sessions_validation_fail");
     }
 
     /*/////////////////////////////////////////////////////////////////
@@ -138,6 +150,15 @@ const AdminPortal = () => {
         })
     }
 
+    const clearStateStyling = () => {
+        setInputErrors({ 
+            company: "",
+            username: "",
+            powerunit: ""
+        });
+
+    };
+
     /* State management functions... */
 
     /*/////////////////////////////////////////////////////////////////
@@ -149,10 +170,11 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     const handleUpdate = (e) => {
-        clearStyling();
+        //clearStyling();
+        clearStateStyling();
         let val = e.target.value;
         switch(e.target.id){
-            case 'username':
+            case 'username-input':
                 setCredentials({
                     ...credentials,
                     USERNAME: val
@@ -164,13 +186,13 @@ const AdminPortal = () => {
                     PASSWORD: val
                 });
                 break;
-            case 'powerunit':
+            case 'powerunit-input':
                 setCredentials({
                     ...credentials,
                     POWERUNIT: val
                 });
                 break;
-            case "company":
+            case "company-name-input":
                 setCompany(val);
                 break;
             default:
@@ -195,46 +217,41 @@ const AdminPortal = () => {
     }
     *//////////////////////////////////////////////////////////////////
 
-    async function updateCompany() {
-        const comp_field = document.getElementById("company");
+    async function updateCompany(e) {
+        /* start */
+        e.preventDefault();
+
+        let isValid = true;
+        let errorMessage = "";
+
+        if (company.trim() === "" || company.trim() === "Your Company Here") {
+            errorMessage = "Company name is required!";
+            isValid = false;
+        }
+
+        setInputErrors(prevErrors => ({ ...prevErrors, company: errorMessage }));
+
+        if (!isValid) {
+            console.error("Input validation error: ", errorMessage);
+            //setPopup("fail");
+            return;
+        }
+        /* end */
+        /*const comp_field = document.getElementById("company");
         if (comp_field.value === "" || comp_field.value === "Your Company Here") {
             comp_field.classList.add("invalid_input");
             showFailFlag("ff_admin_cc", "Company name is required!")
             return;
-        }
+        }*/
 
-        //const response = await fetch(API_URL + "api/Admin/SetCompany", {
-        const response = await fetch(API_URL + "v1/companies/" + company, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include'
-        })
-
-        if (response.status === 401 || response.status === 403) {
-            returnOnFail("Status 401/403 returned, logging out.");
-        }
-
-        const data = await response.json();
-        console.log("data: ",data);
-
+        const response = await updateCompanyInDB(company);
         if (response.ok) {
             // set active, company is updated dynamically...
             setActiveCompany(company.split(' '));
-            setPopup("Company Success");
-            
-            setTimeout(() => {
-                closePopup();
-            },SUCCESS_WAIT);
+            successPopup("company_update_success");
         }
         else {
-            console.error(data.message);
-            setPopup("Fail");
-
-            setTimeout(() => {
-                setPopup("Change Company");
-            },FAIL_WAIT);
+            failedPopup("fail");
         }
     }
 
@@ -256,86 +273,49 @@ const AdminPortal = () => {
     }
     *//////////////////////////////////////////////////////////////////
 
-    async function addDriver() {
-        const user_field = document.getElementById("username");
-        const power_field = document.getElementById("powerunit");
-        
-        let code = -1;
-        const messages = [
-            "Username is required!", 
-            "Powerunit is required!", 
-            "Username and Powerunit are required!"
-        ]
-        const alerts = {
-            0: "ff_admin_au_un", // Username is required!...
-            1: "ff_admin_au_pu", // Powerunit is required!...
-            2: "ff_admin_au_up" // Username and Powerunit are required!...
+    async function addDriver(e) {
+        e.preventDefault();
+
+        let isValid = true;
+        let errorMessage = "";
+        let errorCount = 0;
+
+        if (credentials.USERNAME.trim() === "") {
+            errorMessage = "Username is required!";
+            isValid = false;
+            errorCount += 1;
         }
 
-        if (user_field.value === "" || user_field.value == null){
-            user_field.classList.add("invalid_input");
-            code += 1;
-
-        } 
-        
-        if (power_field.value === "" || power_field.value == null){
-            power_field.classList.add("invalid_input");
-            code += 2;
+        if (credentials.POWERUNIT.trim() === "") {
+            errorMessage = "Powerunit is required!",
+            isValid = false;
+            errorCount += 1;
         }
 
-        if (code >= 0) {
-            showFailFlag(alerts[code], messages[code])
+        setInputErrors(prevErrors => ({ 
+            ...prevErrors, 
+            username: errorCount <= 1 ? errorMessage : "Username and Powerunit are both required!",
+            powerunit: errorCount <= 1 ? errorMessage : "Username and Powerunit are both required!" }));
+
+        if (!isValid) {
+            console.error("Input validation error: ", errorMessage);
             return;
         }
 
-        let COMPANIES = JSON.parse(sessionStorage.getItem("companies_mapping") || "{}");
-
-        const formData = {
-            Username: credentials.USERNAME,
-            Permissions: null,
-            Powerunit: credentials.POWERUNIT,
-            ActiveCompany: Object.keys(COMPANIES).find(key => COMPANIES[key] === activeCompany),
-            Companies: Object.keys(checkedCompanies).filter(key => checkedCompanies[key]),
-            Modules: Object.keys(checkedModules).filter(key => checkedModules[key])
-        };
-
-        //const response = await fetch(API_URL + "api/Admin/AddDriver", {
-        const response = await fetch(API_URL + "v1/users", {
-            body: JSON.stringify(formData),
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            },
-            credentials: 'include'
-        })
-
-        if (response.status === 401 || response.status === 403) {
-            returnOnFail("Status 401/403 returned, logging out.");
-        }
-
-        const data = await response.json();
-        console.log(data);
-
+        const response = await addUserToDB(credentials, activeCompany, checkedCompanies, checkedModules);
         if (response.ok) {
-            setPopup("Add Success");
-            setTimeout(() => {
-                closePopup();
-            },SUCCESS_WAIT);
-        } else {
-            if (response.status === 409) {
-                setPopup("Admin_Add Fail");
-            } 
-            else if (data.message.includes("Username is already in use")) {
-                setPopup("Admin_Add Fail");
-            }
-            else {
-                setPopup("Fail");
-            }
-            setTimeout(() => {
-                closePopup();
-            },FAIL_WAIT);
+            successPopup("users_add_success");
+            return;
         }
-        
+
+        let popupType = "fail";
+        if (response.status === 409) {
+            popupType = "users_add_fail_conflict";
+        } 
+        else if (response.status == 400) {
+            popupType = "users_add_fail_invalid";
+        }
+        failedPopup(popupType);      
     }
 
     /*/////////////////////////////////////////////////////////////////
@@ -357,9 +337,6 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     async function pullDriver() {
-        //console.log("companies: ", companies);
-        //console.log("modules: ", modules);
-
         if (document.getElementById("username").value === "") {
             document.getElementById("username").classList.add("invalid_input");
 
@@ -367,26 +344,11 @@ const AdminPortal = () => {
             return;
         }
 
-        //const response = await fetch(API_URL + "api/Admin/PullDriver", {
-        const response = await fetch(API_URL + "v1/users/" + credentials.USERNAME, {
-            method: "GET",
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            },
-            credentials: 'include'
-        })
-
-        if (response.status === 401 || response.status === 403) {
-            returnOnFail("Status 401/403 returned, logging out.");
-            return;
-        }
-
-        // catch failed request and prevent behavior...
+        const response = await fetchUserFromDB(credentials.USERNAME);
         if (response.ok) {
             const user = await response.json()
-            console.log(user);
+            //console.log(user);
 
-            //const user = data;
             setPreviousUser(credentials.USERNAME);
             setCredentials({
                 USERNAME: user.Username,
@@ -406,14 +368,11 @@ const AdminPortal = () => {
             });
             setCheckedCompanies(checked_comps);
 
-            setPopup("Edit User");
+            setPopup("users_update");
         }
         else {
             document.getElementById("username").className = "invalid_input";
-            document.getElementById("ff_admin_fu").classList.add("visible");
-            setTimeout(() => {
-                document.getElementById("ff_admin_fu").classList.remove("visible");
-            },1500)
+            showFailFlag("ff_admin_fu", "Username not found!")
         }
     }
 
@@ -432,8 +391,51 @@ const AdminPortal = () => {
             render failure popup notification
     }
     *//////////////////////////////////////////////////////////////////
+    const [errors, setErrors] = useState({
+        username: '',
+        powerunit: '',
+        general: '',
+    });
 
-    async function updateDriver() {
+    const validateForm = () => {
+        let newErrors = { username: '', powerunit: '', general: ''};
+        let isValid = true;
+
+        if (!credentials.USERNAME.trim()) {
+            newErrors.username = "Username is required!",
+            isValid = false;
+        }
+        if (!credentials.POWERUNIT.trim()) {
+            newErrors.powerunit = "Powerunit is required!",
+            isValid = false;
+        }
+
+        if (!isValid) {
+            switch (newErrors) {
+                case newErrors.username && newErrors.powerunit:
+                    newErrors.general = "Username and Powerunit are required!";
+                    newErrors.username = '';
+                    newErrors.powerunit = '';
+                    break;
+                case newErrors.username:
+                    newErrors.general = newErrors.username;
+                    break;
+                case newErrors.powerunit:
+                    newErrors.general = newErrors.powerunit;
+                    break;
+                default:
+                    break;
+            }
+
+            //newErrors.username = '';
+            //newErrors.powerunit = '';
+            console.error(newErrors.general);
+            setErrors(newErrors);
+            return isValid;
+        }
+    }
+
+    async function updateDriver(e) {
         const user_field = document.getElementById("username")
         const power_field = document.getElementById("powerunit")
         
@@ -466,42 +468,39 @@ const AdminPortal = () => {
             return;
         }
 
+        e.preventDefault();
+        const formIsValid = validateForm();
+
+        if (formIsValid) {
+            console.log('Form data is valid:', )
+        } else {
+            console.log('Form has errors:', errors);
+        }
+
         // package driver credentials and attempt to replace...
-        const body_data = {
-            ...credentials,
-            //PREVUSER: previousUser,
+        const update_user = {
+            USERNAME: credentials.USERNAME,
+            PASSWORD: credentials.PASSWORD,
+            POWERUNIT: credentials.POWERUNIT,
             COMPANIES: Object.keys(checkedCompanies).filter(key => checkedCompanies[key]),
             MODULES: Object.keys(checkedModules).filter(key => checkedModules[key])
         }
-        //const response = await fetch(API_URL + "api/Admin/ReplaceDriver", {
-        const response = await fetch (API_URL + "v1/users/" + previousUser, {
-            body: JSON.stringify(body_data),
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            },
-            credentials: 'include'
-        })
-
-        if (response.status === 401 || response.status === 403) {
-            returnOnFail("Status 401/403 returned, logging out.");
-        }
-
-        //const data = await response.json();
-        //console.log(data);
-
+        const response = await updateUserInDB(previousUser, update_user);
         if (response.ok) {
             setPreviousUser("add new");
-            setPopup("Update Success");
+            successPopup("users_update_success");
         }
         else {
-            console.error(response.message);
-            setPopup("UNPUConflictFail");
+            let popupType = "fail";
+            if (response.status == 404) {
+                popupType = "users_update_fail_notFound";
+            }
+            else if (response.status == 409) {
+                /* DIFFERENTIATE BETWEEN POWERUNIT + USERNAME CONFLICTS */
+                popupType = "users_update_fail_duplicate";
+            }
+            returnOnFail(popupType);
         }
-
-        setTimeout(() => {
-            closePopup();
-        },1000)
     }
 
     /*/////////////////////////////////////////////////////////////////
@@ -518,38 +517,19 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     async function removeDriver() {
-        //const response = await fetch(API_URL + "api/Admin/DeleteDriver?USERNAME=" + credentials.USERNAME, {
-        const response = await fetch(API_URL + "v1/users/" + credentials.USERNAME, {
-            method: "DELETE",
-            credentials: 'include'
-        })
-
-        if (response.status === 401 || response.status === 403) {
-            returnOnFail("Status 401/403 returned, logging out.");
-        }
-
-        //const data = await response.json();
-        //console.log(data);
-
-        // init popup duration and conditionally render popup response...
+        const response = removeUserFromDB(credentials.USERNAME);
         if (response.ok) {
-            setPopup("Delete Success");
-            setTimeout(() => {
-                closePopup();
-            },SUCCESS_WAIT)
+            successPopup("users_delete_success");
         } 
         else {
-            const data = await response.json();
-            console.error(data.message);
-            if (data.duplicate) {
-                setPopup("ActiveUserFail");
+            let popupType = "fail";
+            if (response.status == 409) {
+                popupType = "users_delete_fail_active";
             }
-            else { 
-                setPopup("Fail");
+            else if (response.status == 404) {
+                popupType = "users_delete_fail_notFound";
             }
-            setTimeout(() => {
-                closePopup();
-            },FAIL_WAIT)
+            returnOnFail(popupType);
         }
     }
 
@@ -596,18 +576,16 @@ const AdminPortal = () => {
         switch(e.target.innerText){
             case "Add New User":
                 //setPopup("Add User");
-                message = "Add User";
+                message = "users_add";
                 setPreviousUser("add new");
                 break;
             case "Change/Remove User":
                 //setPopup("Find User");
-                message = "Find User";
+                message = "users_fetch";
                 break;
             case "Edit Company Name":
                 //setPopup("Change Company");
-                message = "Change Company";
-                break;
-            default:
+                message = "company_update";
                 break;
         }
         openPopup(message);
@@ -626,15 +604,14 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     const [popupVisible, setVisible] = useState(false);
-    const openPopup = (message) => {
-        setPopup(message);
+    const openPopup = (type) => {
+        setPopup(type);
         setVisible(true);
-        console.log(`popupVisible: ${popupVisible}`);
     };
 
     const closePopup = () => {
         setVisible(false);
-
+        setPopup(DEFAULT_POPUP);
         clearStyling();
         setCheckedCompanies({});
         setCheckedModules({});
@@ -659,17 +636,6 @@ const AdminPortal = () => {
         });
         }
     }
-
-    // package helper functions to organize popup functions...
-    const functions = {
-        "addDriver": addDriver,
-        "pullDriver": pullDriver,
-        "updateDriver": updateDriver,
-        "removeDriver": removeDriver,
-        "cancelDriver": cancelDriver,
-        "updateCompany": updateCompany,
-        "checkboxChange": handleCheckboxChange
-    };
 
     const header = location.state ? location.state.header : "open";
     const collapsed = header === "open" ? true : false;
@@ -699,18 +665,26 @@ const AdminPortal = () => {
                     />
                     {popupVisible && (
                         <Popup 
-                            message={popup}
+                            popupType={popup}
                             powerunit={null}
                             handleUpdate={handleUpdate}
+                            updateCompany={updateCompany}
+                            updateDriver={updateDriver}
+                            addDriver={addDriver}
+                            pullDriver={pullDriver}
+                            removeDriver={removeDriver}
+                            cancelDriver={cancelDriver}
                             credentials={credentials}
                             company={company}
                             companies={companies}
                             modules={modules}
                             checkedCompanies={checkedCompanies}
                             checkedModules={checkedModules}
-                            functions={functions}
+                            handleCheckboxChange={handleCheckboxChange}
                             closePopup={closePopup}
                             isVisible={popupVisible}
+                            errors={errors}
+                            inputErrors={inputErrors}
                         />
                     )}
                     <Footer id="footer"/>

@@ -109,9 +109,74 @@
     position: relative;
 }
 
+.company-name-error {
+    color: red;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.aria_fail_flag {
+    width: auto !important;
+    overflow: visible;
+    position: absolute;
+    top: 110%;
+    left: auto;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 10px 4px;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+}
+
+    .aria_fail_flag::before {
+        content: "";
+        position: absolute;
+        top: -18px;
+        left: 20%;
+        transform: translateX(-50%);
+        border-width: 10px;
+        border-style: solid;
+        border-color: transparent transparent #f8d7da transparent;
+        z-index: 11;
+    }
+
+    .aria_fail_flag.visible {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .aria_fail_flag p {
+        margin: 0;
+        font-size: small;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+
 @media only screen and (min-width: 630px) {
     .popupLogin {
         width: 40%;
+    }
+
+    .aria_fail_flag p {
+        font-size: smaller;
     }
 }
 

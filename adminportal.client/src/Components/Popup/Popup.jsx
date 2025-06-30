@@ -3,25 +3,56 @@ import Success from '../../assets/success.svg';
 import Fail from '../../assets/error.svg';
 import "./Popup.css";
 
-const Popup = (props) => {
-    const popupClass = props.isVisible ? 'overlay-visible' : 'overlay-hidden';
+const Popup = ({ 
+        popupType,
+        powerunit,
+        credentials,
+        company,
+        companies,
+        modules,
+        checkedCompanies,
+        checkedModules,
+        errors,
+        inputErrors,
+        handleUpdate,
+        updateCompany,
+        updateDriver,
+        cancelDriver,
+        handleCheckboxChange,
+        addDriver,
+        removeDriver,
+        pullDriver,
+        isVisible,
+        closePopup
+    }) => {
+    const popupClass = isVisible ? 'overlay-visible' : 'overlay-hidden';
     return (
         <div id="popupWindow" className={`overlay ${popupClass}`}>
             <div className="popupLogin">
                 <div id="popupAddExit" className="content">
-                    <h1 id="close_add" className="popupLoginWindow" onClick={props.closePopup}>&times;</h1>
+                    <h1 id="close_add" className="popupLoginWindow" onClick={closePopup}>&times;</h1>
                 </div>
                 <PopupContent 
-                    message={props.message}
-                    powerunit={props.powerunit}
-                    handleUpdate={props.handleUpdate}
-                    credentials={props.credentials}
-                    company={props.company}
-                    companies={props.companies}
-                    modules={props.modules}
-                    checkedCompanies={props.checkedCompanies}
-                    checkedModules={props.checkedModules}
-                    functions={props.functions}
+                    popupType={popupType}
+                    powerunit={powerunit}
+                    handleUpdate={handleUpdate}
+                    updateCompany={updateCompany}
+                    updateDriver={updateDriver}
+                    addDriver={addDriver}
+                    pullDriver={pullDriver}
+                    removeDriver={removeDriver}
+                    cancelDriver={cancelDriver}
+                    credentials={credentials}
+                    company={company}
+                    companies={companies}
+                    modules={modules}
+                    checkedCompanies={checkedCompanies}
+                    checkedModules={checkedModules}
+                    handleCheckboxChange={handleCheckboxChange}
+                    closePopup={closePopup}
+                    isVisible={isVisible}
+                    errors={errors}
+                    inputErrors={inputErrors}
                 />
             </div>
         </div>
