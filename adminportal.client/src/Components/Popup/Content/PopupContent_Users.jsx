@@ -56,8 +56,8 @@ const PopupContent_Users = ({ popupType,
                         />
                         {inputErrors.powerunit && (
                             <div className={`aria_fail_flag ${inputErrors?.powerunit ? 'visible' : ''}`} 
-                            id="ff_admin_au_pu"
-                            role="alert">
+                                id="ff_admin_au_pu"
+                                role="alert">
                                 <p>{inputErrors?.powerunit}</p>
                             </div>
                         )}
@@ -137,10 +137,23 @@ const PopupContent_Users = ({ popupType,
                 <div className="popupContent">
                     <div className="input_wrapper">
                         <label>Username</label>
-                        <input type="text" id="username" value={credentials.USERNAME} className="input_form" onChange={handleUpdate}/>
-                        <div className="fail_flag" id="ff_admin_fu">
-                            <p>Username was not found!</p>
-                        </div>
+                        <input 
+                            type="text" 
+                            id="username-input" 
+                            value={credentials.USERNAME ?? ''} 
+                            className={`input_form ${inputErrors?.username ? 'invalid_input' : ''}`}
+                            name="username"
+                            onChange={handleUpdate} required
+                            aria-invalid={!!inputErrors?.username}
+                            aria-describedby={inputErrors?.username ? 'ff_admin_fu' : undefined}
+                        />
+                        {inputErrors?.username && (
+                            <div className={`aria_fail_flag ${inputErrors?.username ? 'visible' : ''}`} 
+                                id="ff_admin_fu"
+                                role="alert">
+                                <p>{inputErrors?.username}</p>
+                            </div>
+                        )}
                     </div>
                     <div id="find_user">
                         <button id="find_user" className="popup_button" onClick={pullDriver}>Find User</button>
@@ -156,18 +169,52 @@ const PopupContent_Users = ({ popupType,
                 <div className="popupContent">
                     <div className="input_wrapper">
                         <label>Username</label>
-                        <input type="text" id="username" value={credentials.USERNAME} className="input_form" onChange={handleUpdate}/>
-                        <div className="fail_flag" id="ff_admin_eu_un">
-                            <p>Username is required!</p>
-                        </div>
+                        <input 
+                            type="text" 
+                            id="username-input-uu" 
+                            value={credentials.USERNAME ?? ''} 
+                            className={`input_form ${inputErrors?.username ? 'invalid_input' : ''}`}
+                            name="username" 
+                            onChange={handleUpdate} required
+                            aria-invalid={!!inputErrors.username}
+                            aria-describedby={inputErrors?.username ? "ff_admin_eu_un" : undefined}
+                        />
+                        {(inputErrors?.username && !inputErrors?.powerunit) && (
+                            <div className={`aria_fail_flag ${inputErrors?.username ? 'visible' : ''}`} 
+                                id="ff_admin_eu_un"
+                                role="alert">
+                                <p>{inputErrors?.username}</p>
+                            </div>
+                        )}
                     </div>
                     <div>
                         <label>Password</label>
-                        <input type="text" id="password" value={credentials.PASSWORD ? credentials.PASSWORD : ""} className="input_form" onChange={handleUpdate}/>
+                        <input 
+                            type="text" 
+                            id="password-input-uu" 
+                            value={credentials.PASSWORD ? credentials.PASSWORD : ""} 
+                            className="input_form" 
+                            onChange={handleUpdate}/>
                     </div>
                     <div className="input_wrapper">
                         <label>Power Unit</label>
-                        <input type="text" id="powerunit" value={credentials.POWERUNIT} className="input_form" onChange={handleUpdate}/>
+                        <input 
+                            type="text" 
+                            id="powerunit-input-uu" 
+                            value={credentials.POWERUNIT ?? ''}
+                            className={`input_form ${inputErrors?.powerunit ? 'invalid_input' : ''}`}
+                            name="powerunit"
+                            onChange={handleUpdate} required
+                            aria-invalid={!!inputErrors?.powerunit}
+                            aria-describedby={inputErrors?.powerunit ? "ff_admin_au_pu" : undefined}
+                        />
+                        {inputErrors.powerunit && (
+                            <div className={`aria_fail_flag ${inputErrors?.powerunit ? 'visible' : ''}`}
+                                id="ff_admin_eu_pu"
+                                role="alert">
+                                <p>{inputErrors?.powerunit}</p>
+                            </div>
+                        )}
                         <div className="fail_flag" id="ff_admin_eu_pu">
                             <p>Powerunit is required!</p>
                         </div>

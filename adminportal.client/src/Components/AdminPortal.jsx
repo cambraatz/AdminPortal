@@ -13,7 +13,6 @@ import Popup from './Popup/Popup';
 import Footer from './Footer/Footer';
 import MenuWindow from './MenuWindow/MenuWIndow';
 import { 
-    showFailFlag,
     FAIL_WAIT, 
     SUCCESS_WAIT 
 } from '../Scripts/helperFunctions';
@@ -41,17 +40,11 @@ rendered across the application.
 
 const AdminPortal = () => {
     /* Page rendering, navigation and state initialization... */
-
-    // location state...
     const location = useLocation();
+    const header = location.state ? location.state.header : "open";
+    const collapsed = header === "open" ? true : false;
 
-    // loading state to prevent early renders...
     const [loading,setLoading] = useState(true);
-
-    // header toggle state...
-    //const [header,setHeader] = useState(location.state ? location.state.header : "open");
-
-    // driver credentials state...
     const [credentials, setCredentials] = useState({
         USERNAME: "",
         PASSWORD: "",
@@ -61,10 +54,6 @@ const AdminPortal = () => {
     // current/past user credentials...
     const [currUser, setCurrUser] = useState("admin");
     const [previousUser, setPreviousUser] = useState("");
-
-    // "users_update", "Find User", "Change Company"...
-    const DEFAULT_POPUP = "users_update"
-    const [popup, setPopup] = useState(DEFAULT_POPUP);
 
     // company (forms) and activeCompany (rendered)...
     const [company, setCompany] = useState();
@@ -76,13 +65,27 @@ const AdminPortal = () => {
         powerunit: ""
      });
 
-    // ensure company, token and navigation validity onLoad...
-    useEffect(() => {  
-            validateUser();
-    }, []);
-
     /* Page rendering helper functions... */
+    const DEFAULT_POPUP = "users_update"
+    const [popup, setPopup] = useState(DEFAULT_POPUP);
+    const [popupVisible, setVisible] = useState(false);
 
+    // handle opening popup state...
+    const openPopup = (type) => {
+        setPopup(type);
+        setVisible(true);
+    };
+
+    // handle closing popup state...
+    const closePopup = () => {
+        setVisible(false);
+        setPopup(DEFAULT_POPUP);
+        clearStateStyling();
+        setCheckedCompanies({});
+        setCheckedModules({});
+    };
+
+    // set success prompt popup...
     const successPopup = (popupType) => {
         setPopup(popupType);
         setTimeout(() => {
@@ -90,6 +93,7 @@ const AdminPortal = () => {
         },SUCCESS_WAIT)
     }
 
+    // set failed prompt popup...
     const failedPopup = (popupType) => {
         setPopup(popupType);
         setTimeout(() => {
@@ -97,12 +101,38 @@ const AdminPortal = () => {
         },FAIL_WAIT)
     }
 
+    // set failed prompt AND send back to login...
     const returnOnFail = (popupType="fail") => {
         setPopup(popupType);
         setTimeout(() => {
             Logout();
         },FAIL_WAIT);
     }
+
+    const [companies,setCompanies] = useState([]);
+    const [modules,setModules] = useState([]);
+
+    const [checkedCompanies,setCheckedCompanies] = useState({});
+    const [checkedModules,setCheckedModules] = useState({});
+
+    const handleCheckboxChange = (type,name) => {
+        if (type === "company") {
+            setCheckedCompanies({
+                ...checkedCompanies,
+                [name]: !checkedCompanies[name]
+        });
+        } else if (type === "module") {
+            setCheckedModules({
+                ...checkedModules,
+                [name]: !checkedModules[name]
+        });
+        }
+    }
+
+    // ensure company, token and navigation validity onLoad...
+    useEffect(() => {  
+            validateUser();
+    }, []);
 
     async function validateUser(){
         setLoading(true);
@@ -114,15 +144,13 @@ const AdminPortal = () => {
             sessionStorage.setItem("companies_map", data.companies);
             const company_map = JSON.parse(data.companies);
             setCompanies(company_map);
-            console.log("companies_map: ", company_map);
+            //console.log("companies_map: ", company_map);
 
             sessionStorage.setItem("modules_map", data.modules);
             const module_map = JSON.parse(data.modules);
             setModules(module_map);
-            console.log("modules_map: ", module_map);
+            //console.log("modules_map: ", module_map);
 
-            console.log(data);
-            console.log(company_map[data.user.ActiveCompany]);
             setCompany(company_map[data.user.ActiveCompany]);
             setActiveCompany(company_map[data.user.ActiveCompany].split(' '));
 
@@ -140,7 +168,7 @@ const AdminPortal = () => {
     }
     *//////////////////////////////////////////////////////////////////
 
-    const clearStyling = () => {
+    /*const clearStyling = () => {
         const elements = ["username","password","powerunit","company"];
         elements.forEach(element => {
             const target = document.getElementById(element);
@@ -148,7 +176,7 @@ const AdminPortal = () => {
                 target.classList.remove("invalid_input");
             }
         })
-    }
+    }*/
 
     const clearStateStyling = () => {
         setInputErrors({ 
@@ -156,10 +184,26 @@ const AdminPortal = () => {
             username: "",
             powerunit: ""
         });
-
     };
 
     /* State management functions... */
+
+    /*/////////////////////////////////////////////////////////////////
+    // handle cancel, clear credentials and close popup...
+    [void] : cancelDriver() {
+        reset driver credentials to null
+        close pop up
+    }
+    *//////////////////////////////////////////////////////////////////
+
+    const cancelDriver = () => {
+        setCredentials({
+            USERNAME: "",
+            PASSWORD: "",
+            POWERUNIT: ""
+        })
+        closePopup();
+    }
 
     /*/////////////////////////////////////////////////////////////////
     // handle changes to admin input fields...
@@ -170,29 +214,29 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     const handleUpdate = (e) => {
-        //clearStyling();
         clearStateStyling();
+        let id = e.target.id;
         let val = e.target.value;
-        switch(e.target.id){
-            case 'username-input':
+        switch(true){
+            case id.startsWith("username"):
                 setCredentials({
                     ...credentials,
                     USERNAME: val
                 });
                 break;
-            case 'password':
+            case id.startsWith("password"):
                 setCredentials({
                     ...credentials,
                     PASSWORD: val
                 });
                 break;
-            case 'powerunit-input':
+            case id.startsWith("powerunit"):
                 setCredentials({
                     ...credentials,
                     POWERUNIT: val
                 });
                 break;
-            case "company-name-input":
+            case id.startsWith("company"):
                 setCompany(val);
                 break;
             default:
@@ -295,7 +339,8 @@ const AdminPortal = () => {
         setInputErrors(prevErrors => ({ 
             ...prevErrors, 
             username: errorCount <= 1 ? errorMessage : "Username and Powerunit are both required!",
-            powerunit: errorCount <= 1 ? errorMessage : "Username and Powerunit are both required!" }));
+            powerunit: errorCount <= 1 ? errorMessage : "Username and Powerunit are both required!"
+        }));
 
         if (!isValid) {
             console.error("Input validation error: ", errorMessage);
@@ -336,17 +381,30 @@ const AdminPortal = () => {
     }
     *//////////////////////////////////////////////////////////////////
 
-    async function pullDriver() {
-        if (document.getElementById("username").value === "") {
-            document.getElementById("username").classList.add("invalid_input");
+    async function pullDriver(e) {
+        e.preventDefault();
 
-            showFailFlag("ff_admin_fu","Username is required!");
+        let isValid = true;
+        let errorMessage = "";
+
+        if (credentials.USERNAME.trim() === "") {
+            errorMessage = "Username is required!";
+            isValid = false;
+        }
+
+        setInputErrors(prevErrors => ({
+            ...prevErrors,
+            username: errorMessage
+        }));
+
+        if (!isValid) {
+            console.error("Input validation error: ", errorMessage);
             return;
         }
 
         const response = await fetchUserFromDB(credentials.USERNAME);
         if (response.ok) {
-            const user = await response.json()
+            const user = await response.json();
             //console.log(user);
 
             setPreviousUser(credentials.USERNAME);
@@ -371,8 +429,14 @@ const AdminPortal = () => {
             setPopup("users_update");
         }
         else {
-            document.getElementById("username").className = "invalid_input";
-            showFailFlag("ff_admin_fu", "Username not found!")
+            //document.getElementById("username").className = "invalid_input";
+            //showFailFlag("ff_admin_fu", "Username not found!")
+            errorMessage = "Username not found!";
+            setInputErrors(prevErrors => ({
+                ...prevErrors,
+                username: errorMessage
+            }));
+            console.error("Input validation error: ", errorMessage);
         }
     }
 
@@ -391,90 +455,35 @@ const AdminPortal = () => {
             render failure popup notification
     }
     *//////////////////////////////////////////////////////////////////
-    const [errors, setErrors] = useState({
-        username: '',
-        powerunit: '',
-        general: '',
-    });
-
-    const validateForm = () => {
-        let newErrors = { username: '', powerunit: '', general: ''};
-        let isValid = true;
-
-        if (!credentials.USERNAME.trim()) {
-            newErrors.username = "Username is required!",
-            isValid = false;
-        }
-        if (!credentials.POWERUNIT.trim()) {
-            newErrors.powerunit = "Powerunit is required!",
-            isValid = false;
-        }
-
-        if (!isValid) {
-            switch (newErrors) {
-                case newErrors.username && newErrors.powerunit:
-                    newErrors.general = "Username and Powerunit are required!";
-                    newErrors.username = '';
-                    newErrors.powerunit = '';
-                    break;
-                case newErrors.username:
-                    newErrors.general = newErrors.username;
-                    break;
-                case newErrors.powerunit:
-                    newErrors.general = newErrors.powerunit;
-                    break;
-                default:
-                    break;
-            }
-
-            //newErrors.username = '';
-            //newErrors.powerunit = '';
-            console.error(newErrors.general);
-            setErrors(newErrors);
-            return isValid;
-        }
-    }
 
     async function updateDriver(e) {
-        const user_field = document.getElementById("username")
-        const power_field = document.getElementById("powerunit")
-        
-        // map empty field cases to messages...
-        let code = -1;
-        const messages = [
-            "Username is required!", 
-            "Powerunit is required!", 
-            "Username and Powerunit are required!"
-        ]
-        const alerts = {
-            0: "ff_admin_eu_un", // Username is required!...
-            1: "ff_admin_eu_pu", // Powerunit is required!...
-            2: "ff_admin_eu_up" // Username and Powerunit are required!...
-        }
-        // flag empty username...
-        if (user_field.value === "" || user_field.value == null){
-            user_field.classList.add("invalid_input");
-            code += 1;
-        } 
-        // flag empty powerunit...
-        if (power_field.value === "" || power_field.value == null){
-            power_field.classList.add("invalid_input");
-            code += 2;
-        }
-
-        // catch and alert user to incomplete fields...
-        if (code >= 0) {
-            showFailFlag(alerts[code],messages[code]);
-            return;
-        }
-
         e.preventDefault();
-        const formIsValid = validateForm();
 
-        if (formIsValid) {
-            console.log('Form data is valid:', )
-        } else {
-            console.log('Form has errors:', errors);
+        let isValid = true;
+        let errorMessage = "";
+        let errorCount = 0;
+
+        if (credentials.USERNAME.trim() === "") {
+            errorMessage = "Username is required!";
+            isValid = false;
+            errorCount += 1;
+        }
+
+        if (credentials.POWERUNIT.trim() === "") {
+            errorMessage = "Powerunit is required!",
+            isValid = false;
+            errorCount += 1;
+        }
+
+        setInputErrors(prevErrors => ({ 
+            ...prevErrors, 
+            username: errorCount <= 1 ? errorMessage : "Username and Powerunit are both required!",
+            powerunit: errorCount <= 1 ? errorMessage : "Username and Powerunit are both required!"
+        }));
+
+        if (!isValid) {
+            console.error("Input validation error: ", errorMessage);
+            return;
         }
 
         // package driver credentials and attempt to replace...
@@ -534,23 +543,6 @@ const AdminPortal = () => {
     }
 
     /*/////////////////////////////////////////////////////////////////
-    // handle cancel, clear credentials and close popup...
-    [void] : cancelDriver() {
-        reset driver credentials to null
-        close pop up
-    }
-    *//////////////////////////////////////////////////////////////////
-
-    async function cancelDriver() {
-        setCredentials({
-            USERNAME: "",
-            PASSWORD: "",
-            POWERUNIT: ""
-        })
-        closePopup();
-    }
-
-    /*/////////////////////////////////////////////////////////////////
     // handle unique behavior of collection of admin buttons...
     [void] : pressButton() {
         reset driver credentials to null
@@ -560,16 +552,11 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     async function pressButton(e) {
-        console.log(e.target);
         setCredentials({
             USERNAME: "",
             PASSWORD: "",
             POWERUNIT: ""
         })
-
-        if (companies.length === 0 || modules.length === 0) {
-            //collectOptions();
-        }
 
         let message;
         // handle main admin button popup generation
@@ -590,55 +577,6 @@ const AdminPortal = () => {
         }
         openPopup(message);
     }
-
-    /*/////////////////////////////////////////////////////////////////
-    [void] : openPopup() {
-        make popup window visible on screen
-        enable on click behavior
-    }
-
-    [void] : closePopup() {
-        self explanatory closing of "popupLoginWindow"
-        setStatus("") and setMessage(null) - reset state data
-    }
-    *//////////////////////////////////////////////////////////////////
-
-    const [popupVisible, setVisible] = useState(false);
-    const openPopup = (type) => {
-        setPopup(type);
-        setVisible(true);
-    };
-
-    const closePopup = () => {
-        setVisible(false);
-        setPopup(DEFAULT_POPUP);
-        clearStyling();
-        setCheckedCompanies({});
-        setCheckedModules({});
-    };
-
-    const [companies,setCompanies] = useState([]);
-    const [modules,setModules] = useState([]);
-
-    const [checkedCompanies,setCheckedCompanies] = useState({});
-    const [checkedModules,setCheckedModules] = useState({});
-
-    const handleCheckboxChange = (type,name) => {
-        if (type === "company") {
-            setCheckedCompanies({
-                ...checkedCompanies,
-                [name]: !checkedCompanies[name]
-        });
-        } else if (type === "module") {
-            setCheckedModules({
-                ...checkedModules,
-                [name]: !checkedModules[name]
-        });
-        }
-    }
-
-    const header = location.state ? location.state.header : "open";
-    const collapsed = header === "open" ? true : false;
 
     // render template...
     return(
@@ -680,10 +618,9 @@ const AdminPortal = () => {
                             modules={modules}
                             checkedCompanies={checkedCompanies}
                             checkedModules={checkedModules}
-                            handleCheckboxChange={handleCheckboxChange}
+                            checkboxChange={handleCheckboxChange}
                             closePopup={closePopup}
                             isVisible={popupVisible}
-                            errors={errors}
                             inputErrors={inputErrors}
                         />
                     )}

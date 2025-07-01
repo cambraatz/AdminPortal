@@ -7,14 +7,13 @@ import { PopupContent_Company,
 
 const PopupContent = ({ 
         popupType,
-        powerunit,
+        //powerunit,
         credentials,
         company,
-        companies,
-        modules,
+        //companies,
+        //modules,
         checkedCompanies,
         checkedModules,
-        errors,
         inputErrors,
         handleUpdate,
         updateCompany,
@@ -96,106 +95,6 @@ const PopupContent = ({
             <h5>this shouldnt happen...</h5>
         )
     }
-
-    /*//
-    //
-    // ACTIVE
-    //
-    else if(props.popupType === "Update Success"){
-        const user = props.credentials.USERNAME;
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="success" src={Success} alt="success"/>
-                    <p>{user} successfully updated!</p>
-                </div>
-            </>
-        )
-    }
-    //
-    //
-    // ACTIVE
-    //
-    else if(props.popupType === "Delete Success"){
-        const user = props.credentials.USERNAME;
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="success" src={Success} alt="success"/>
-                    <p>{user} successfully deleted!</p>
-                </div>
-            </>
-        )
-    }
-
-    else if(props.popupType === "Success"){
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="success" src={Success} alt="success"/>
-                    <p>Delivery successfully updated!</p>
-                </div>
-            </>
-        )
-    }
-    //
-    //
-    // ACTIVE
-    //
-    
-    else if(props.popupType === "ActiveUserFail"){
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="fail" src={Fail} alt="fail"/>
-                    <p>Cannot delete active user.</p>
-                </div>
-            </>
-        )
-    }
-    else if(props.popupType === "UNPUConflictFail"){
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="fail" src={Fail} alt="fail"/>
-                    <p>Update failed, contact administrator.</p>
-                </div>
-            </>
-        )
-    }
-    else if(props.popupType === "UNConflictFail"){
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="fail" src={Fail} alt="fail"/>
-                    <p>Username/Powerunit already in use.</p>
-                </div>
-            </>
-        )
-    }
-
-    else if(props.popupType === "Logout Success"){
-        const user = props.credentials.USERNAME;
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="success" src={Success} alt="success"/>
-                    <p>{user} was logged out successfully!</p>
-                </div>
-            </>
-        )
-    }
-
-    else if(props.popupType === "Token Fail"){
-        return(
-            <>
-                <div className="popupContent">
-                    <img id="fail" src={Fail} alt="fail"/>
-                    <p>Token validation failed, logging out.</p>
-                </div>
-            </>
-        )
-    }*/
 };
 
 export default PopupContent;

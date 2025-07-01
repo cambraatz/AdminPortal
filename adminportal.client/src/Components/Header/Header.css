@@ -75,11 +75,6 @@ header h1, header h2, header h3, header h4, header h5 {
 }
 
 @media only screen and (min-width: 1200px) {
-    .sticky_header div {
-        flex-direction: row;
-        align-items: center;
-    }
-
     .sticky_header div h1,
     .sticky_header div h2 {
         margin: 0 0 1% 4%;

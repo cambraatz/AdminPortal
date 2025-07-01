@@ -12,13 +12,12 @@ const Popup = ({
         modules,
         checkedCompanies,
         checkedModules,
-        errors,
         inputErrors,
         handleUpdate,
         updateCompany,
         updateDriver,
         cancelDriver,
-        handleCheckboxChange,
+        checkboxChange,
         addDriver,
         removeDriver,
         pullDriver,
@@ -48,10 +47,9 @@ const Popup = ({
                     modules={modules}
                     checkedCompanies={checkedCompanies}
                     checkedModules={checkedModules}
-                    handleCheckboxChange={handleCheckboxChange}
+                    checkboxChange={checkboxChange}
                     closePopup={closePopup}
                     isVisible={isVisible}
-                    errors={errors}
                     inputErrors={inputErrors}
                 />
             </div>
