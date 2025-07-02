@@ -17,6 +17,7 @@ const PopupContent = ({
         inputErrors,
         handleUpdate,
         updateCompany,
+        updateDriver,
         cancelDriver,
         checkboxChange,
         addDriver,
@@ -59,7 +60,7 @@ const PopupContent = ({
                 checkboxChange={checkboxChange}
                 handleUpdate={handleUpdate}
                 addDriver={addDriver}
-                updateDriver={updateCompany}
+                updateDriver={updateDriver}
                 removeDriver={removeDriver}
                 cancelDriver={cancelDriver}
                 pullDriver={pullDriver}

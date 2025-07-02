@@ -295,6 +295,10 @@ const AdminPortal = () => {
             successPopup("company_update_success");
         }
         else {
+            if (response.status === 401 || response.status === 403) {
+                const popupType = "sessions_unauthorized_fail";
+                returnOnFail(popupType);
+            }
             failedPopup("fail");
         }
     }
@@ -354,7 +358,12 @@ const AdminPortal = () => {
         }
 
         let popupType = "fail";
-        if (response.status === 409) {
+        if (response.status === 401 || response.status === 403) {
+            popupType = "sessions_unauthorized_fail";
+            returnOnFail(popupType);
+            return;
+        }
+        else if (response.status === 409) {
             popupType = "users_add_fail_conflict";
         } 
         else if (response.status == 400) {
@@ -429,8 +438,10 @@ const AdminPortal = () => {
             setPopup("users_update");
         }
         else {
-            //document.getElementById("username").className = "invalid_input";
-            //showFailFlag("ff_admin_fu", "Username not found!")
+            if (response.status === 401 || response.status === 403) {
+                const popupType = "sessions_unauthorized_fail";
+                returnOnFail(popupType);
+            }
             errorMessage = "Username not found!";
             setInputErrors(prevErrors => ({
                 ...prevErrors,
@@ -501,14 +512,19 @@ const AdminPortal = () => {
         }
         else {
             let popupType = "fail";
-            if (response.status == 404) {
+            if (response.status === 401 || response.status === 403) {
+                popupType = "sessions_unauthorized_fail";
+                returnOnFail(popupType);
+                return;
+            }
+            else if (response.status == 404) {
                 popupType = "users_update_fail_notFound";
             }
             else if (response.status == 409) {
                 /* DIFFERENTIATE BETWEEN POWERUNIT + USERNAME CONFLICTS */
                 popupType = "users_update_fail_duplicate";
             }
-            returnOnFail(popupType);
+            failedPopup(popupType);
         }
     }
 
@@ -532,13 +548,18 @@ const AdminPortal = () => {
         } 
         else {
             let popupType = "fail";
-            if (response.status == 409) {
+            if (response.status === 401 || response.status === 403) {
+                popupType = "sessions_unauthorized_fail";
+                returnOnFail(popupType);
+                return;
+            }
+            else if (response.status === 409) {
                 popupType = "users_delete_fail_active";
             }
-            else if (response.status == 404) {
+            else if (response.status === 404) {
                 popupType = "users_delete_fail_notFound";
             }
-            returnOnFail(popupType);
+            failedPopup(popupType);
         }
     }
 

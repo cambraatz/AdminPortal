@@ -13,6 +13,13 @@ const PopupContent_Sessions = (props) => {
                     <p>Session validation failed for {credentials.USERNAME}.</p>
                 </div>
             )
+        case "sessions_unauthorized_fail":
+            return (
+                <div className="popupContent">
+                    <img id="fail" src={Fail} alt="fail"/>
+                    <p>Unauthorized attempt, logging out.</p>
+                </div>
+            )
     }
 };
 
