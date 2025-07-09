@@ -1,6 +1,22 @@
 import Success from '../../../assets/success.svg';
 import Fail from '../../../assets/error.svg';
 import "../Popup.css";
+import React, { useEffect, useRef } from 'react';
+
+const handleKeyPress = (reference) => {
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && reference.current) {
+            e.preventDefault();
+            reference.current.click();
+        }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+    }
+}
 
 const PopupContent_Company = ({ 
     popupType, 
@@ -10,6 +26,12 @@ const PopupContent_Company = ({
     cancelDriver, 
     inputErrors 
 }) => {
+
+    const updateCompanyButtonRef = useRef(null);
+    useEffect(() => {
+        handleKeyPress(updateCompanyButtonRef);
+    }, [updateCompanyButtonRef]);
+
     switch (popupType) {
         case "company_update":
             return(
@@ -35,7 +57,11 @@ const PopupContent_Company = ({
                         )}
                     </div>
                     <div id="submit_company">
-                        <button className="popup_button" onClick={updateCompany}>Update Company</button>
+                        <button 
+                            className="popup_button"
+                            onClick={updateCompany}
+                            ref={updateCompanyButtonRef}
+                        >Update Company</button>
                     </div>
                     <div id="cancel_user">
                         <button className="popup_button" onClick={cancelDriver}>Cancel</button>

@@ -1,6 +1,22 @@
 import Success from '../../../assets/success.svg';
 import Fail from '../../../assets/error.svg';
 import "../Popup.css";
+import React, { useRef, useEffect } from 'react';
+
+const handleKeyPress = (reference) => {
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && reference.current) {
+            e.preventDefault();
+            reference.current.click();
+        }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+    }
+}
 
 const PopupContent_Users = ({ popupType, 
         credentials,  
@@ -18,6 +34,22 @@ const PopupContent_Users = ({ popupType,
 
     const companies = JSON.parse(sessionStorage.getItem("companies_map") || "{}");
     const modules = JSON.parse(sessionStorage.getItem("modules_map") || "{}");
+
+    const addUserButtonRef = useRef(null);
+    useEffect(() => {
+        handleKeyPress(addUserButtonRef);
+    }, [addUserButtonRef]);
+
+    const findUserButtonRef = useRef(null);
+    useEffect(() => {
+        handleKeyPress(findUserButtonRef);
+    }, [findUserButtonRef]);
+
+    const updateUserButtonRef = useRef(null);
+    useEffect(() => {
+        handleKeyPress(updateUserButtonRef);
+    }, [updateUserButtonRef]);
+
     switch (popupType) {
         case "users_add":
             return (
@@ -100,7 +132,12 @@ const PopupContent_Users = ({ popupType,
                     </div>
 
                     <div id="add_user">
-                        <button type="button" className="popup_button" onClick={addDriver}>Add User</button>
+                        <button 
+                            type="button" 
+                            className="popup_button" 
+                            onClick={addDriver} 
+                            ref={addUserButtonRef}
+                        >Add User</button>
                     </div>
                     <div id="cancel_user">
                         <button type="button" className="popup_button" onClick={cancelDriver}>Cancel</button>
@@ -156,7 +193,13 @@ const PopupContent_Users = ({ popupType,
                         )}
                     </div>
                     <div id="find_user">
-                        <button id="find_user" className="popup_button" onClick={pullDriver}>Find User</button>
+                        <button 
+                            type="submit"
+                            id="find_user"
+                            className="popup_button"
+                            onClick={pullDriver}
+                            ref={findUserButtonRef}
+                        >Find User</button>
                     </div>
                     <div id="cancel_user">
                         <button className="popup_button" onClick={cancelDriver}>Cancel</button>
@@ -261,7 +304,12 @@ const PopupContent_Users = ({ popupType,
                     </div>
 
                     <div id="submit_user">
-                        <button className="popup_button" onClick={updateDriver}>Update User</button>
+                        <button 
+                            type="submit"
+                            className="popup_button"
+                            onClick={updateDriver}
+                            ref={updateUserButtonRef}
+                        >Update User</button>
                     </div>
                     <div id="remove_user">
                         <button className="popup_button" onClick={removeDriver}>Remove User</button>
@@ -297,26 +345,26 @@ const PopupContent_Users = ({ popupType,
             )
 
         case "users_delete_success":
-                        return (
-                            <div className="popupContent">
-                                <img id="success" src={Success} alt="success"/>
-                                <p>'{credentials.USERNAME}' successfully deleted!</p>
-                            </div>
-                        )
-                    case "users_delete_fail_active":
-                        return (
-                            <div className="popupContent">
-                                <img id="fail" src={Fail} alt="fail"/>
-                                <p>Cannot delete active user '{credentials.USERNAME}'.</p>
-                            </div>
-                        )
-                    case "users_delete_fail_notFound":
-                        return (
-                            <div className="popupContent">
-                                <img id="fail" src={Fail} alt="fail"/>
-                                <p>'{credentials.USERNAME}' was not found in records.</p>
-                            </div>
-                        )
+            return (
+                <div className="popupContent">
+                    <img id="success" src={Success} alt="success"/>
+                    <p>'{credentials.USERNAME}' successfully deleted!</p>
+                </div>
+            )
+        case "users_delete_fail_active":
+            return (
+                <div className="popupContent">
+                    <img id="fail" src={Fail} alt="fail"/>
+                    <p>Cannot delete active user '{credentials.USERNAME}'.</p>
+                </div>
+            )
+        case "users_delete_fail_notFound":
+            return (
+                <div className="popupContent">
+                    <img id="fail" src={Fail} alt="fail"/>
+                    <p>'{credentials.USERNAME}' was not found in records.</p>
+                </div>
+            )
     }
 };
 

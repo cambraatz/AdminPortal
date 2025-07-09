@@ -140,7 +140,7 @@ namespace AdminPortal.Server.Services
                     if (rowsAffected > 0)
                     {
                         _logger.LogInformation($"Company '{companyKey}' successfully updated to '{newName}'.");
-                        return (true, $"Company '{companyKey}' updated to '{newName}'.");
+                        return (true, $"Company '{companyKey}' updated to '{newName}' successfully.");
                     }
                     else
                     {

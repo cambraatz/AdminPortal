@@ -52,9 +52,13 @@ namespace AdminPortal.Server.Controllers
             {
                 return CreatedAtAction(nameof(GetUserByUsername), new { username = user?.Username }, user);
             }
-            else if (message.Contains("Username already exists"))
+            else if (message.Contains("Username is already in use"))
             {
                 return Conflict(new { message = message });
+            }
+            else if (message.Contains("required."))
+            {
+                return BadRequest(new { message = message });
             }
             else
             {
@@ -143,12 +147,12 @@ namespace AdminPortal.Server.Controllers
                     _logger.LogInformation("Attempt to update non-existent user '{OldUsername}'.", prevUsername);
                     return NotFound($"User with username '{prevUsername}' not found."); // 404
                 }
-                else if (message.Contains("Username is already in use."))
+                else if (message.Contains("Username is already in use"))
                 {
                     _logger.LogWarning($"Conflict: New username '{newUser.Username}' for user '{prevUsername}' already exists.");
                     return Conflict(new { message = message }); // 409
                 }
-                else if (message.Contains("Powerunit is already in use."))
+                else if (message.Contains("Powerunit is already assigned"))
                 {
                     _logger.LogWarning($"Conflict: New powerunit '{newUser.Powerunit}' for user '{prevUsername}' already exists.");
                     return Conflict(new { message = message }); // 409

@@ -42,6 +42,7 @@ namespace AdminPortal.Server.Controllers
         public async Task<IActionResult> UpdateCompany(string newName)
         {
             // ensure valid proposed name...
+            // may be redundant given null/empty username return 405 (ie: doesnt reach this endpoint)...
             if (string.IsNullOrEmpty(newName))
             {
                 _logger.LogWarning("New company name must be valid to update.");
@@ -69,12 +70,12 @@ namespace AdminPortal.Server.Controllers
             else
             {
                 // handle failed update...
-                if (message.Contains("Company not found"))
+                if (message.Contains("not found", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogInformation($"Attempt to update non-existent company '{companyKey}'.");
                     return NotFound(new { message = $"Company with name '{companyKey}' not found." }); // 404
                 }
-                else if (message.Contains("Company name already exists"))
+                else if (message.Contains("Company name already exists", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogWarning($"Conflict: New company '{newName}' already exists.");
                     return Conflict(new { message = message }); // 409

@@ -292,6 +292,7 @@ const AdminPortal = () => {
         if (response.ok) {
             // set active, company is updated dynamically...
             setActiveCompany(company.split(' '));
+            console.log(`company: ${company}`);
             successPopup("company_update_success");
         }
         else {
@@ -323,6 +324,7 @@ const AdminPortal = () => {
 
     async function addDriver(e) {
         e.preventDefault();
+        console.log("add driver called!");
 
         let isValid = true;
         let errorMessage = "";
@@ -542,7 +544,7 @@ const AdminPortal = () => {
     *//////////////////////////////////////////////////////////////////
 
     async function removeDriver() {
-        const response = removeUserFromDB(credentials.USERNAME);
+        const response = await removeUserFromDB(credentials.USERNAME);
         if (response.ok) {
             successPopup("users_delete_success");
         } 
