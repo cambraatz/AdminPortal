@@ -613,7 +613,7 @@ const AdminPortal = () => {
                     <Header
                         company={activeCompany ? activeCompany : "Transportation Computer Support, LLC."}
                         title="Admin Portal"
-                        subtitle="Add/Update Company Records"
+                        subtitle="Add/Update"
                         currUser={currUser}
                         logoutButton={true}
                         prompt="What would you like to do?"
