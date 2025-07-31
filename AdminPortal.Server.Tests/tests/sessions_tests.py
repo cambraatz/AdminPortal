@@ -4,6 +4,7 @@ import json
 import argparse
 import sys
 import os
+import jwt
 
 from utils import (
     COLOR_DEFAULT, COLOR_SUCCESS, COLOR_FAIL, COLOR_PRIMARY, COLOR_SECONDARY, COLOR_WARN,
@@ -15,7 +16,9 @@ from utils import (
 # --- API HELPER FUNCTIONS FOR SESSIONS CONTROLLER ---
 
 def get_current_driver_via_api(session, verbose=False):
-    """Helper to call GET /v1/sessions/me and return the response."""
+    """
+    Helper to call GET /v1/sessions/me and return the response.
+    """
     url = f"{BASE_API_URL}/sessions/me"
     printv(f"  > GET {url} - Getting current driver session", verbose)
     response = session.get(url, verify=False)
@@ -30,11 +33,49 @@ def get_current_driver_via_api(session, verbose=False):
 # Note: logout_via_api is assumed to be in utils.py and imported.
 # If it's only defined here, you'd need to ensure it's accessible or move it to utils.
 
-def return_session_via_api(session, verbose=False):
-    """Helper to call POST /v1/sessions/return and return the response."""
-    url = f"{BASE_API_URL}/sessions/return"
+def return_session_via_api(session, session_id, verbose=False):
+    """
+    Helper to call POST /v1/sessions/return/{userId} and return the response.
+    The userId parameter is expected to be the sessionId.
+    """
+    url = f"{BASE_API_URL}/sessions/return/{session_id}"
     printv(f"  > POST {url} - Initializing return session", verbose)
-    response = session.post(url, verify=False) # Return doesn't need a body
+    response = session.post(url, verify=False)
+    printv(f"  < Status: {response.status_code}", verbose)
+    try:
+        printv(f"  < Response: {json.dumps(response.json(), indent=2)}", verbose)
+    except json.JSONDecodeError:
+        if response.text:
+            printv(f"  < Response (text): {response.text}", verbose)
+    return response
+
+def post_credentials_via_api(session, verbose=False):
+    """
+    Helper to call POST /v1/sessions/me and return the response.
+    """
+    url = f"{BASE_API_URL}/sessions/me"
+    printv(f"  > POST {url} - Attempting credentials refresh", verbose)
+    response = session.post(url, verify=False)
+    printv(f"  < Status: {response.status_code}", verbose)
+    try:
+        printv(f"  < Response: {json.dumps(response.json(), indent=2)}", verbose)
+    except json.JSONDecodeError:
+        if response.text:
+            printv(f"  < Response (text): {response.text}", verbose)
+    return response
+
+def logout_with_id_via_api(session, session_id, verbose=False, session_body=None):
+    """
+    Helper to call the POST /v1/sessions/logout/{userId} endpoint,
+    with the userId parameter being the session ID.
+    """
+    url = f"{BASE_API_URL}/sessions/logout/{session_id}"
+    printv(f"  > POST {url} - Logging out session with ID {session_id}", verbose)
+    
+    headers = {'Content-Type': 'application/json'}
+    body = session_body if session_body is not None else {}
+    
+    response = session.post(url, json=body, headers=headers, verify=False)
     printv(f"  < Status: {response.status_code}", verbose)
     try:
         printv(f"  < Response: {json.dumps(response.json(), indent=2)}", verbose)
@@ -145,31 +186,63 @@ class SessionApiTests(unittest.TestCase):
     # Test 3: Logout (Success)
     def test_3_logout_success(self):
         # Session is already created in setUp.
+        # Get the session ID from the token before we can log out
+        access_token = self.session.cookies.get("access_token")
+        if not access_token:
+            self.fail("Access token cookie not found. Cannot proceed with logout test.")
+
         try:
+            # Decode the access token (without verifying signature for test purposes)
+            decoded_token = jwt.decode(access_token, options={"verify_signature": False})
+            session_id = decoded_token.get("sessionId")
+            
+            if session_id is None:
+                self.fail("Session ID claim not found in access token.")
+
             printv(f"\n--- Attempting Logout ---", self.verbose, COLOR_SECONDARY)
-            response = logout_via_api(self.session, self.verbose) # This test *performs* the logout
+
+            # The C# endpoint takes a SessionModel body, so we'll pass one
+            session_body = {
+                "Username": DEV_USERNAME,
+                "AccessToken": access_token,
+                "RefreshToken": self.session.cookies.get("refresh_token")
+            }
+            
+            response = logout_with_id_via_api(self.session, session_id, self.verbose, session_body)
             self.assertEqual(response.status_code, 200, f"Expected 200 OK, got {response.status_code}. Response: {response.text}")
             
             response_json = response.json()
             self.assertIn("Logged out successfully", response_json["message"], "Logout message mismatch")
+            
+            # Verify that all cookies are cleared
+            self.assertNotIn("access_token", self.session.cookies, "Access token cookie was not cleared.")
+            self.assertNotIn("refresh_token", self.session.cookies, "Refresh token cookie was not cleared.")
+            
+            printc("Test Logout with Session ID (Success) PASSED.", COLOR_SUCCESS)
 
-            # Verify that the session is truly logged out by attempting to access a protected endpoint
-            protected_url = f"{BASE_API_URL}/users/{DEV_USERNAME}" # Example protected endpoint
-            post_logout_response = self.session.get(protected_url, verify=False)
-            self.assertEqual(post_logout_response.status_code, 401, 
-                             f"Expected 401 Unauthorized after logout, got {post_logout_response.status_code}. Response: {post_logout_response.text}")
-
-            printc("Test Logout (Success) PASSED.", COLOR_SUCCESS)
         except Exception as e:
-            printc(f"Test Logout (Success) FAILED: {e}", COLOR_FAIL)
+            printc(f"Test Logout with Session ID (Success) FAILED: {e}", COLOR_FAIL)
             raise
 
-    # Test 4: Return Session (Success)
+    # Test 4: Full Return and Refresh Process (Success)
     def test_4_return_session_success(self):
-        # Session is already created in setUp.
+        """Test a successful POST to the new /return/{userId} endpoint."""
+        # Get the session ID from the token before we can return
+        access_token = self.session.cookies.get("access_token")
+        if not access_token:
+            self.fail("Access token cookie not found. Cannot proceed with return test.")
+        
         try:
-            printv(f"\n--- Attempting Valid Return ---", self.verbose, COLOR_SECONDARY)
-            response = return_session_via_api(self.session, self.verbose)
+            # Decode the access token (without verifying signature for test purposes)
+            decoded_token = jwt.decode(access_token, options={"verify_signature": False})
+            session_id = decoded_token.get("sessionId")
+            
+            if session_id is None:
+                self.fail("Session ID claim not found in access token.")
+            
+            printv(f"\n--- Attempting Valid Return to /return/{session_id} ---", self.verbose, COLOR_SECONDARY)
+            response = return_session_via_api(self.session, session_id, self.verbose)
+
             self.assertEqual(response.status_code, 200, f"Expected 200 OK, got {response.status_code}. Response: {response.text}")
             
             response_json = response.json()

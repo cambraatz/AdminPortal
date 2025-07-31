@@ -15,13 +15,15 @@ import MenuWindow from './MenuWindow/MenuWIndow';
 import { 
     FAIL_WAIT, 
     SUCCESS_WAIT 
-} from '../Scripts/helperFunctions';
-import { Logout } from '../Scripts/apiCalls';
+} from '../scripts/helperFunctions.jsx';
+import { Logout } from '../scripts/apiCalls.jsx';
 import LoadingSpinner from './LoadingSpinner';
 
 import { updateUserInDB, removeUserFromDB, addUserToDB, fetchUserFromDB } from '../utils/api/users';
 import { updateCompanyInDB } from '../utils/api/companies';
 import { validateSession } from '../utils/api/sessions';
+
+import { useAppContext } from '../hooks/useAppContext.js';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -39,12 +41,25 @@ rendered across the application.
 *//////////////////////////////////////////////////////////////////////
 
 const AdminPortal = () => {
-    /* Page rendering, navigation and state initialization... */
-    const location = useLocation();
-    const header = location.state ? location.state.header : "open";
-    const collapsed = header === "open" ? true : false;
+    const {
+        loading, setLoading, // [bool] global app loading state
+        session, setSession, // [obj] credentials for session
+    } = useAppContext();
+    /*session = {
+        id: -1,
+        username: "",
+        powerunit: "",
+        mfstdate: "",
+        company: "",
+        valid: false,
+    }*/
 
-    const [loading,setLoading] = useState(true);
+    /* Page rendering, navigation and state initialization... */
+    //const location = useLocation();
+    //const header = location.state ? location.state.header : "open";
+    //const collapsed = header === "open" ? true : false;
+
+    //const [loading,setLoading] = useState(true);
     const [credentials, setCredentials] = useState({
         USERNAME: "",
         PASSWORD: "",
@@ -52,7 +67,7 @@ const AdminPortal = () => {
     });
 
     // current/past user credentials...
-    const [currUser, setCurrUser] = useState("admin");
+    //const [currUser, setCurrUser] = useState("admin");
     const [previousUser, setPreviousUser] = useState("");
 
     // company (forms) and activeCompany (rendered)...
@@ -140,26 +155,56 @@ const AdminPortal = () => {
         const response = await validateSession(API_URL);
         if (response.ok) {
             const data = await response.json();
+            console.log(data);
+            
+            const username = data.user.Username;
+            const userId = data.userId;
 
-            sessionStorage.setItem("companies_map", data.companies);
             const company_map = JSON.parse(data.companies);
+            sessionStorage.setItem("companies_map", data.companies);
             setCompanies(company_map);
+            const module_map = JSON.parse(data.modules);
+            sessionStorage.setItem("modules_map", data.modules);
+            setModules(module_map);
+
+            const company_name = company_map[data.user.ActiveCompany];
+            //const powerunit = data.user.Powerunit;
+
+            setSession({
+                ...session,
+                username: username,
+                id: userId,
+                //mfstdate: null,
+                //powerunit: powerunit,
+                company: company_name,
+                valid: true,
+            });
+
+            //sessionStorage.setItem("companies_map", data.companies);
+            //const company_map = JSON.parse(data.companies);
+            //setCompanies(company_map);
             //console.log("companies_map: ", company_map);
 
-            sessionStorage.setItem("modules_map", data.modules);
-            const module_map = JSON.parse(data.modules);
-            setModules(module_map);
+            //sessionStorage.setItem("modules_map", data.modules);
+            //const module_map = JSON.parse(data.modules);
+            //setModules(module_map);
             //console.log("modules_map: ", module_map);
 
-            setCompany(company_map[data.user.ActiveCompany]);
-            setActiveCompany(company_map[data.user.ActiveCompany].split(' '));
+            //setCompany(company_map[data.user.ActiveCompany]);
+            //setActiveCompany(company_map[data.user.ActiveCompany].split(' '));
 
-            setCurrUser(data.user.Username);
+            //setCurrUser(data.user.Username);
             setLoading(false);
             return;
         }
-
-        returnOnFail("sessions_validation_fail");
+        //returnOnFail("sessions_validation_fail");
+        openPopup("fail");
+            setTimeout(() => {
+                //clearStateStyling();
+                Logout(session);
+                closePopup();
+                return;
+            }, FAIL_WAIT);
     }
 
     /*/////////////////////////////////////////////////////////////////
@@ -611,13 +656,12 @@ const AdminPortal = () => {
             ) : (
                 <>
                     <Header
-                        company={activeCompany ? activeCompany : "Transportation Computer Support, LLC."}
+                        company={session.company ? session.company.split(' ') : ["Transportation", "Computer", "Support", "LLC."]}
                         title="Admin Portal"
                         subtitle="Add/Update"
-                        currUser={currUser}
+                        currUser={session.username}
                         logoutButton={true}
-                        prompt="What would you like to do?"
-                        collapsed={collapsed}
+                        root={true}
                     />
                     <MenuWindow 
                         prompt="What would you like to do?"

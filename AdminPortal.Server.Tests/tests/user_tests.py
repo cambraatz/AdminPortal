@@ -309,7 +309,7 @@ class UserApiTests(unittest.TestCase):
         unique_id = uuid.uuid4().hex[:8]
         updated_user_data = {
             **user_data, 
-            "Username": f"{user_data["Username"]}_{unique_id}",
+            "Username": f"{user_data['Username']}_{unique_id}",
             "Powerunit": f"{unique_id[:3]}"
         }
         updated_user_data["Companies"].append("TCS")
@@ -347,7 +347,7 @@ class UserApiTests(unittest.TestCase):
             get_response_json = get_response.json()
 
             # assert updates were correctly set...
-            self.assertEqual(get_response_json["Username"], f"{user_data["Username"]}_{unique_id}", "Username not updated")
+            self.assertEqual(get_response_json["Username"], f"{user_data['Username']}_{unique_id}", "Username not updated")
             self.assertEqual(get_response_json["Powerunit"], f"{unique_id[:3]}", "Powerunit not updated")
             self.assertIn("TCS", get_response_json["Companies"], "Updated companies list mismatch")
             self.assertNotIn("admin", get_response_json["Modules"], "Updated modules list mismatch")

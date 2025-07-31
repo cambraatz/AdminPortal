@@ -6,11 +6,10 @@ namespace AdminPortal.Server.Services.Interfaces
     public interface ITokenService
     {
         // generates tokens from provided username...
-        (string accessToken, string refreshToken) GenerateToken(string username);
+        Task<(string accessToken, string refreshToken)> GenerateToken(string username, long sessionId);
 
         // validates the access token, refreshes the tokens with refresh token when possible...
-        TokenValidation ValidateTokens(string accessToken, string refreshToken, string userName, bool tryRefresh = true);
-        (bool success, string message) AuthorizeRequest(HttpContext context);
+        Task<TokenValidation> ValidateTokens(string accessToken, string refreshToken, string userName, bool tryRefresh = true);
     }
 
     // stored in record for immutability + pattern-matching convenience...

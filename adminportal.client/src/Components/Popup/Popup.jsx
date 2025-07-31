@@ -1,5 +1,5 @@
 //import PopupContent from './PopupContent';
-//import Success from '../../assets/success.svg';
+import Success from '../../assets/success.svg';
 import Fail from '../../assets/error.svg';
 import "./Popup.css";
 
@@ -39,6 +39,23 @@ const Popup = ({
                 <div className="popupContent">
                     <img id="fail" src={Fail} alt="fail"/>
                     <p>Oops! Something went wrong, please try again.</p>
+                </div>
+            )
+        }
+
+        else if (popupType === "return") {
+            return (
+                <div className="popupLoginContent success_popup">
+                    <img id="success" src={Success} alt="success"/>
+                    <p>Returning to Login Portal.</p>
+                </div>
+            )
+        }
+        else if (popupType === "logout") {
+            return (
+                <div className="popupLoginContent success_popup">
+                    <img id="success" src={Success} alt="success"/>
+                    <p>Logging Out.</p>
                 </div>
             )
         }

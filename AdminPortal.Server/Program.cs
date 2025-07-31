@@ -184,6 +184,7 @@ builder.Services.AddScoped<IMappingService, MappingService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
 
 var app = builder.Build();
 

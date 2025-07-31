@@ -36,30 +36,6 @@
         font-size: 0.75em;
     }
 
-#collapseToggle {
-    width: 15%;
-    height: 10px;
-    padding-bottom: 2px;
-    font-size: x-small;
-    background-color: #e0eaf3;
-    border: 1px solid gray;
-    border-bottom: 0;
-    border-radius: 5px 5px 0 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    left: 42.5%;
-    bottom: 0;
-    z-index: 10;
-    transition: all 2s ease-in-out;
-}
-
-    #collapseToggle img {
-        width: 25%;
-        padding-top: 2px;
-    }
-
 #uw_logout button,
 #uw_return button {
     height: auto;
@@ -68,6 +44,7 @@
 
 #uw_return {
     margin-right: 0.5em;
+    /*margin-right: 0;*/
 }
 
 #uw_navButtons {
@@ -87,8 +64,15 @@
 }
 
 @media only screen and (min-width: 630px) {
+    /* 
+    uw_content {
+        width: 100%;
+        align-items: stretch;
+    }
+    */
     #uw_return {
         margin-right: 0;
+        /*margin-right: 0.5em;*/
     }
 
     #uw_navButtons {
@@ -109,25 +93,5 @@
         height: 25px;
         width: 25px;
         margin-right: 5px;
-    }
-
-    #collapseToggle {
-        width: 8%;
-        left: 46%;
-    }
-
-    #collapseToggle img {
-        width: 25%;
-    }
-}
-
-@media only screen and (min-width: 1200px) {
-    #collapseToggle {
-        width: 6%;
-        left: 47%;
-    }
-
-    #collapseToggle img {
-        width: 25%;
     }
 }
